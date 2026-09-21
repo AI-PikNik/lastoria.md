@@ -1,0 +1,122 @@
+@import "tailwindcss";
+
+:root {
+  --radius: 0.65rem;
+
+  /* Тёплая пиццерия: крем, томатный красный, уголь */
+  --background: #fdf6ec;
+  --foreground: #2a1e16;
+
+  --card: #ffffff;
+  --card-foreground: #2a1e16;
+
+  --popover: #ffffff;
+  --popover-foreground: #2a1e16;
+
+  --primary: #c8391f;
+  --primary-foreground: #fff8f0;
+
+  --secondary: #f3e4c9;
+  --secondary-foreground: #2a1e16;
+
+  --muted: #f1e6d6;
+  --muted-foreground: #6b5849;
+
+  --accent: #e8a13a;
+  --accent-foreground: #2a1e16;
+
+  --destructive: #b3261e;
+  --destructive-foreground: #fff8f0;
+
+  --success: #3c7a3f;
+  --success-foreground: #ffffff;
+
+  --border: #e5d5bd;
+  --input: #e5d5bd;
+  --ring: #c8391f;
+
+  --charcoal: #221812;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #1a130e;
+    --foreground: #f3e9dc;
+
+    --card: #241a13;
+    --card-foreground: #f3e9dc;
+
+    --popover: #241a13;
+    --popover-foreground: #f3e9dc;
+
+    --primary: #e0532f;
+    --primary-foreground: #fff8f0;
+
+    --secondary: #34261b;
+    --secondary-foreground: #f3e9dc;
+
+    --muted: #2c2018;
+    --muted-foreground: #c2ac95;
+
+    --accent: #e8a13a;
+    --accent-foreground: #1a130e;
+
+    --destructive: #e0433a;
+    --destructive-foreground: #fff8f0;
+
+    --success: #5aa860;
+    --success-foreground: #0f1a0f;
+
+    --border: #3a2c20;
+    --input: #3a2c20;
+    --ring: #e0532f;
+
+    --charcoal: #100b08;
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-charcoal: var(--charcoal);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --font-sans: var(--font-sans-family);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+* {
+  border-color: var(--border);
+}
+
+.badge-18 {
+  background: var(--charcoal);
+  color: #fff;
+}
