@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import createNextIntlPlugin from "next-intl/plugin";
 
 function siteHost(): string | undefined {
   try {
@@ -16,9 +17,10 @@ const nextConfig: NextConfig = {
     remotePatterns: [],
   },
   experimental: {
+    // 404 для адресов вне языковых разделов (app/global-not-found.tsx)
+    globalNotFound: true,
     serverActions: {
-      // Редактор товара может отправлять главное фото + несколько фото галереи
-      // (до 5 МБ каждое) одним запросом Server Action — поднимаем лимит тела запроса.
+      // Загрузка фото товара, логотипа, favicon — поднимаем лимит тела запроса.
       bodySizeLimit: "20mb",
       // За обратным прокси (Nginx в aaPanel) добавляем публичный домен сайта
       // в доверенные источники Server Actions на случай, если прокси не
@@ -34,8 +36,18 @@ const nextConfig: NextConfig = {
         source: "/:path*{/}?",
         headers: [{ key: "X-Accel-Buffering", value: "no" }],
       },
+      {
+        // Загруженные файлы (в т.ч. SVG-логотип) не могут выполнять скрипты
+        source: "/uploads/:path*",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Content-Security-Policy", value: "default-src 'none'; img-src 'self' data:; style-src 'unsafe-inline'; sandbox" },
+        ],
+      },
     ];
   },
 };
 
-export default nextConfig;
+const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
+
+export default withNextIntl(nextConfig);

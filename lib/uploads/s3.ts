@@ -14,6 +14,11 @@ function extensionFromMime(mime: string): string {
       return "png";
     case "image/webp":
       return "webp";
+    case "image/svg+xml":
+      return "svg";
+    case "image/x-icon":
+    case "image/vnd.microsoft.icon":
+      return "ico";
     default:
       return "bin";
   }

@@ -3,75 +3,59 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireAdminSession } from "@/lib/auth-guard";
-import { settingsSchema } from "@/lib/validation";
+import { flattenZodError, settingsSchema } from "@/lib/validation";
+import { uploadBrandFile, uploadImage, UploadValidationError } from "@/lib/uploads";
+import { revalidatePublicSite } from "@/lib/admin-data";
+import type { ActionResult } from "@/lib/action-result";
 import type { Prisma } from "@/lib/generated/prisma/client";
 
-export interface ActionResult {
-  ok: boolean;
-  error?: string;
-  fieldErrors?: Record<string, string>;
-}
+const json = (value: unknown) => value as Prisma.InputJsonValue;
 
-function safeJsonArray(value: FormDataEntryValue | null): unknown[] {
-  if (typeof value !== "string" || !value) return [];
-  try {
-    const parsed = JSON.parse(value);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
-
-function flatten(error: import("zod").ZodError): Record<string, string> {
-  const result: Record<string, string> = {};
-  for (const issue of error.issues) {
-    const key = issue.path[0]?.toString() ?? "form";
-    if (!result[key]) result[key] = issue.message;
-  }
-  return result;
-}
-
-export async function updateSettings(formData: FormData): Promise<ActionResult> {
+export async function updateSettings(raw: unknown): Promise<ActionResult> {
   await requireAdminSession();
+  const parsed = settingsSchema.safeParse(raw);
+  if (!parsed.success) return { ok: false, error: "Проверьте поля формы", fieldErrors: flattenZodError(parsed.error) };
+  const d = parsed.data;
 
-  const parsed = settingsSchema.safeParse({
-    restaurantName: formData.get("restaurantName"),
-    restaurantPhone: formData.get("restaurantPhone"),
-    restaurantAddress: formData.get("restaurantAddress"),
-    restaurantEmail: formData.get("restaurantEmail") || "",
-    workingHours: formData.get("workingHours"),
-    minOrderAmount: formData.get("minOrderAmount"),
-    seoDefaultTitle: formData.get("seoDefaultTitle"),
-    seoDefaultDescription: formData.get("seoDefaultDescription"),
-    telegramChatId: formData.get("telegramChatId") || "",
-    emailSenderAddress: formData.get("emailSenderAddress") || "",
-    deliveryZones: safeJsonArray(formData.get("deliveryZones")),
-  });
-
-  if (!parsed.success) {
-    return { ok: false, error: "Проверьте поля формы", fieldErrors: flatten(parsed.error) };
-  }
-
-  await prisma.settings.upsert({
-    where: { id: "main" },
-    update: {
-      ...parsed.data,
-      restaurantEmail: parsed.data.restaurantEmail || null,
-      telegramChatId: parsed.data.telegramChatId || null,
-      emailSenderAddress: parsed.data.emailSenderAddress || null,
-      deliveryZones: parsed.data.deliveryZones as unknown as Prisma.InputJsonValue,
-    },
-    create: {
-      id: "main",
-      ...parsed.data,
-      restaurantEmail: parsed.data.restaurantEmail || null,
-      telegramChatId: parsed.data.telegramChatId || null,
-      emailSenderAddress: parsed.data.emailSenderAddress || null,
-      deliveryZones: parsed.data.deliveryZones as unknown as Prisma.InputJsonValue,
-    },
-  });
+  const data = {
+    restaurantName: d.restaurantName,
+    restaurantPhone: d.restaurantPhone,
+    restaurantAddress: d.restaurantAddress,
+    restaurantEmail: d.restaurantEmail || null,
+    workingHours: json(d.workingHours),
+    minOrderAmount: d.minOrderAmount,
+    seoTitles: json(d.seoTitles),
+    seoDescriptions: json(d.seoDescriptions),
+    shortAnswers: json(d.shortAnswers),
+    telegramChatId: d.telegramChatId || null,
+    emailSenderAddress: d.emailSenderAddress || null,
+    logoUrl: d.logoUrl || null,
+    faviconUrl: d.faviconUrl || null,
+    heroImageUrl: d.heroImageUrl || null,
+    geoLat: d.geoLat ?? null,
+    geoLng: d.geoLng ?? null,
+    cookieBannerEnabled: d.cookieBannerEnabled,
+    analyticsId: d.analyticsId || null,
+  };
+  await prisma.settings.upsert({ where: { id: "main" }, update: data, create: { id: "main", ...data } });
 
   revalidatePath("/admin/settings");
-  revalidatePath("/", "layout");
+  revalidatePublicSite();
   return { ok: true };
+}
+
+/** Логотип / favicon (JPG, PNG, WEBP, SVG, ICO) или картинка героя главной */
+export async function uploadBrandAsset(formData: FormData): Promise<ActionResult> {
+  await requireAdminSession();
+  const file = formData.get("file");
+  const kind = formData.get("kind");
+  if (!(file instanceof File) || file.size === 0) return { ok: false, error: "Файл не выбран" };
+  try {
+    const result = kind === "hero" ? await uploadImage(file, "brand") : await uploadBrandFile(file);
+    revalidatePath("/admin/media");
+    return { ok: true, url: result.url };
+  } catch (error) {
+    if (error instanceof UploadValidationError) return { ok: false, error: error.message };
+    throw error;
+  }
 }

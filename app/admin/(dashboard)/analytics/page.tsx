@@ -8,7 +8,7 @@ import {
   type PeriodKey,
 } from "@/lib/analytics";
 import { formatMoney } from "@/lib/format";
-import { PRODUCT_TYPE_LABELS } from "@/lib/constants";
+import { CATEGORY_KIND_LABELS } from "@/lib/constants";
 import { StatCard } from "@/components/admin/stat-card";
 import { PeriodSelector } from "@/components/admin/period-selector";
 import { SalesChart } from "@/components/admin/charts/sales-chart";
@@ -62,9 +62,9 @@ export default async function AdminAnalyticsPage({
       </div>
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
-        <StatCard title="Выручка" value={formatMoney(summary.revenue)} />
+        <StatCard title="Выручка" value={formatMoney(summary.revenue, "admin")} />
         <StatCard title="Заказов" value={String(summary.ordersCount)} />
-        <StatCard title="Средний чек" value={formatMoney(summary.avgOrderValue)} />
+        <StatCard title="Средний чек" value={formatMoney(summary.avgOrderValue, "admin")} />
         <StatCard title="Неподтверждённые" value={String(summary.pendingCount)} />
         <StatCard title="Подтверждено, %" value={`${ratio}%`} />
       </div>
@@ -78,18 +78,18 @@ export default async function AdminAnalyticsPage({
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
-          <CardHeader><CardTitle>По типу товаров</CardTitle></CardHeader>
+          <CardHeader><CardTitle>По типам групп (пицца, напитки, алкоголь…)</CardTitle></CardHeader>
           <CardContent>
             <BreakdownChart
               data={breakdown.byType.map((b) => ({
-                label: PRODUCT_TYPE_LABELS[b.type],
+                label: CATEGORY_KIND_LABELS[b.type],
                 revenue: b.revenue,
               }))}
             />
           </CardContent>
         </Card>
         <Card>
-          <CardHeader><CardTitle>По категориям</CardTitle></CardHeader>
+          <CardHeader><CardTitle>По группам товаров</CardTitle></CardHeader>
           <CardContent>
             <BreakdownChart
               data={breakdown.byCategory.map((b) => ({ label: b.categoryName, revenue: b.revenue }))}
@@ -110,7 +110,7 @@ export default async function AdminAnalyticsPage({
                 {topProducts.byRevenue.map((p) => (
                   <TableRow key={p.productId}>
                     <TableCell>{p.name}</TableCell>
-                    <TableCell className="text-right">{formatMoney(p.revenue)}</TableCell>
+                    <TableCell className="text-right">{formatMoney(p.revenue, "admin")}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -153,7 +153,7 @@ export default async function AdminAnalyticsPage({
                 <TableRow key={p.promoId}>
                   <TableCell>{p.name}</TableCell>
                   <TableCell className="text-right">{p.ordersCount}</TableCell>
-                  <TableCell className="text-right">{formatMoney(p.totalDiscount)}</TableCell>
+                  <TableCell className="text-right">{formatMoney(p.totalDiscount, "admin")}</TableCell>
                 </TableRow>
               ))}
               {promoEffectiveness.length === 0 && (

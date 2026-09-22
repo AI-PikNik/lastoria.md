@@ -1,10 +1,10 @@
-import { prisma } from "@/lib/prisma";
+import { getCategoryOptions, getProductOptions } from "@/lib/admin-data";
 import { PromoForm } from "@/components/admin/promo-form";
 
 export default async function NewPromoPage() {
   const [products, categories] = await Promise.all([
-    prisma.product.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true } }),
-    prisma.category.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true } }),
+    getProductOptions(),
+    getCategoryOptions(),
   ]);
 
   return (

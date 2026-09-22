@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { getCategoryOptions, getProductOptions } from "@/lib/admin-data";
 import { toNumber } from "@/lib/format";
 import { PromoForm } from "@/components/admin/promo-form";
 
@@ -11,8 +12,8 @@ export default async function EditPromoPage({
   const { id } = await params;
   const [promo, products, categories] = await Promise.all([
     prisma.promo.findUnique({ where: { id } }),
-    prisma.product.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true } }),
-    prisma.category.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true } }),
+    getProductOptions(),
+    getCategoryOptions(),
   ]);
 
   if (!promo) notFound();
@@ -26,6 +27,7 @@ export default async function EditPromoPage({
         promo={{
           id: promo.id,
           name: promo.name,
+          publicNames: promo.publicNames,
           code: promo.code,
           type: promo.type,
           value: toNumber(promo.value),

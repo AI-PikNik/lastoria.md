@@ -1,54 +1,76 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { Check, Plus } from "lucide-react";
+import { Button, type ButtonProps } from "@/components/ui/button";
 import { useCart } from "@/components/cart/cart-context";
 import { useAgeGate } from "@/components/age-gate/age-gate-context";
+import { useRouter } from "@/i18n/navigation";
+import { cn } from "@/lib/utils";
 
 interface AddToCartButtonProps {
   productId: string;
   name: string;
-  isAlcohol: boolean;
-  variantName?: string | null;
+  ageRestricted: boolean;
+  variantKey?: string | null;
   qty?: number;
   className?: string;
-  size?: "default" | "sm" | "lg";
+  size?: ButtonProps["size"];
+  /** full — «Добавить в корзину», short — «В корзину» */
+  label?: "full" | "short";
 }
 
 export function AddToCartButton({
   productId,
   name,
-  isAlcohol,
-  variantName,
+  ageRestricted,
+  variantKey,
   qty = 1,
   className,
   size = "default",
+  label = "short",
 }: AddToCartButtonProps) {
+  const t = useTranslations("product");
+  const tCart = useTranslations("cart");
+  const router = useRouter();
   const { addItem } = useCart();
   const { requestConfirmation } = useAgeGate();
   const [pending, setPending] = React.useState(false);
+  const [justAdded, setJustAdded] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!justAdded) return;
+    const timer = window.setTimeout(() => setJustAdded(false), 1500);
+    return () => window.clearTimeout(timer);
+  }, [justAdded]);
 
   const handleClick = async () => {
-    if (isAlcohol) {
+    if (ageRestricted) {
       setPending(true);
       const ok = await requestConfirmation();
       setPending(false);
       if (!ok) return;
     }
-    addItem({ productId, variantName: variantName ?? null, qty });
-    toast.success(`${name} добавлен в корзину`);
+    addItem({ productId, variantKey: variantKey ?? null, qty });
+    setJustAdded(true);
+    toast.success(t("added", { name }), {
+      action: { label: tCart("title"), onClick: () => router.push("/cart") },
+    });
   };
 
   return (
     <Button
       type="button"
       size={size}
-      className={className}
+      className={cn("shrink-0", className)}
       onClick={handleClick}
       disabled={pending}
+      aria-label={`${t("addToCartFull")}: ${name}`}
     >
-      В корзину
+      {justAdded ? <Check aria-hidden="true" /> : <Plus aria-hidden="true" />}
+      <span>{label === "full" ? t("addToCartFull") : t("addToCart")}</span>
     </Button>
   );
 }

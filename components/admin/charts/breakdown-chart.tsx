@@ -27,7 +27,7 @@ export function BreakdownChart({ data }: { data: BreakdownItem[] }) {
         <XAxis type="number" stroke="var(--muted-foreground)" fontSize={12} />
         <YAxis type="category" dataKey="label" stroke="var(--muted-foreground)" fontSize={12} width={100} />
         <Tooltip
-          formatter={(value) => formatMoney(Number(value ?? 0))}
+          formatter={(value) => formatMoney(Number(value ?? 0), "admin")}
           contentStyle={{
             background: "var(--card)",
             border: "1px solid var(--border)",

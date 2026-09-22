@@ -1,73 +1,82 @@
 import Image from "next/image";
-import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
+import { useTranslations } from "next-intl";
+import { ChevronRight } from "lucide-react";
+import { Link } from "@/i18n/navigation";
+import type { ProductCardView } from "@/lib/catalog";
+import type { AppLocale } from "@/lib/i18n/locales";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { AddToCartButton } from "./add-to-cart-button";
-import { formatMoney } from "@/lib/format";
+import { ProductBadges } from "./product-badges";
+import { Price } from "./price";
 
-export interface ProductCardData {
-  id: string;
-  slug: string;
-  name: string;
-  shortDescription: string | null;
-  imageUrl: string | null;
-  isAlcohol: boolean;
-  isVegetarian: boolean;
-  isSpicy: boolean;
-  isFeatured: boolean;
-  price: number;
-  oldPrice: number | null;
-  hasDiscount: boolean;
-}
+/**
+ * Карточка товара.
+ * Телефон: горизонтальная (фото слева) — меню читается быстрее, меньше прокрутки.
+ * Планшет и шире: вертикальная, 2–4 колонки.
+ */
+export function ProductCard({
+  product,
+  locale,
+  priority = false,
+}: {
+  product: ProductCardView;
+  locale: AppLocale;
+  priority?: boolean;
+}) {
+  const t = useTranslations("product");
+  const tMenu = useTranslations("menu");
+  const href = `/menu/${product.slug}`;
 
-export function ProductCard({ product }: { product: ProductCardData }) {
   return (
-    <div className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm transition-shadow hover:shadow-md">
-      <Link href={`/menu/${product.slug}`} className="relative block aspect-square overflow-hidden bg-muted">
+    <article className="group relative flex h-full gap-3 overflow-hidden rounded-xl bg-card p-2.5 shadow-card gold-frame transition-shadow hover:shadow-lift sm:flex-col sm:gap-0 sm:p-0">
+      <Link
+        href={href}
+        className="relative block aspect-square w-28 shrink-0 self-start overflow-hidden rounded-lg bg-surface sm:aspect-[4/3] sm:self-auto sm:w-full sm:rounded-none sm:rounded-t-xl"
+        tabIndex={-1}
+        aria-hidden="true"
+      >
         {product.imageUrl ? (
           <Image
             src={product.imageUrl}
-            alt={product.name}
+            alt=""
             fill
-            sizes="(max-width: 768px) 50vw, 280px"
-            className="object-cover transition-transform group-hover:scale-105"
+            priority={priority}
+            sizes="(max-width: 639px) 112px, (max-width: 1023px) 50vw, (max-width: 1279px) 33vw, 290px"
+            className="object-cover transition-transform duration-300 group-hover:scale-[1.04]"
           />
-        ) : null}
-        <div className="absolute left-2 top-2 flex flex-wrap gap-1">
-          {product.isFeatured && <Badge variant="accent">Хит</Badge>}
-          {product.hasDiscount && <Badge variant="destructive">Акция</Badge>}
-          {product.isAlcohol && <Badge variant="dark">18+</Badge>}
-          {product.isSpicy && <Badge variant="secondary">Острое</Badge>}
-          {product.isVegetarian && <Badge variant="secondary">Вег.</Badge>}
-        </div>
-      </Link>
-      <div className="flex flex-1 flex-col gap-2 p-4">
-        <Link href={`/menu/${product.slug}`}>
-          <h3 className="font-display font-semibold leading-snug hover:text-primary">
-            {product.name}
-          </h3>
-        </Link>
-        {product.shortDescription && (
-          <p className="line-clamp-2 text-sm text-muted-foreground">
-            {product.shortDescription}
-          </p>
+        ) : (
+          <span className="flex h-full items-center justify-center font-display text-3xl italic text-gold">LS</span>
         )}
-        <div className="mt-auto flex items-center justify-between pt-2">
-          <div className="flex items-baseline gap-2">
-            <span className="font-semibold text-primary">{formatMoney(product.price)}</span>
-            {product.oldPrice && (
-              <span className="text-sm text-muted-foreground line-through">
-                {formatMoney(product.oldPrice)}
-              </span>
-            )}
-          </div>
-          <AddToCartButton
-            productId={product.id}
-            name={product.name}
-            isAlcohol={product.isAlcohol}
-            size="sm"
+      </Link>
+
+      <div className="flex min-w-0 flex-1 flex-col gap-1.5 sm:p-4">
+        <ProductBadges flags={product} />
+        <h3 className="font-display text-lg font-bold leading-snug text-foreground">
+          <Link href={href} className="hover:text-primary focus-visible:text-primary">
+            {product.name}
+          </Link>
+        </h3>
+        {product.shortDescription && (
+          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">{product.shortDescription}</p>
+        )}
+        <div className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-1.5">
+          <Price
+            price={product.price}
+            oldPrice={product.oldPrice}
+            locale={locale}
+            fromLabel={product.hasVariants ? tMenu("priceFrom") : undefined}
           />
+          {product.hasVariants ? (
+            <Link href={href} className={cn(buttonVariants({ variant: "outline" }), "px-3")}>
+              {t("choose")}
+              <ChevronRight aria-hidden="true" />
+            </Link>
+          ) : (
+            <AddToCartButton productId={product.id} name={product.name} ageRestricted={product.ageRestricted} />
+          )}
         </div>
       </div>
-    </div>
+    </article>
   );
 }

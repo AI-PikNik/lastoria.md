@@ -15,7 +15,8 @@ import {
 import { prisma } from "@/lib/prisma";
 import { toNumber } from "@/lib/format";
 import { REVENUE_STATUSES } from "@/lib/constants";
-import type { OrderStatus, ProductType } from "@/lib/generated/prisma/client";
+import { adminName } from "@/lib/admin-data";
+import type { CategoryKind, OrderStatus } from "@/lib/generated/prisma/client";
 
 export type PeriodKey =
   | "today"
@@ -156,7 +157,8 @@ export async function getSalesOverTime(
 }
 
 export interface TypeBreakdown {
-  type: ProductType;
+  /** Тип группы (пицца, напитки, алкоголь…) */
+  type: CategoryKind;
   revenue: number;
   qty: number;
 }
@@ -178,16 +180,16 @@ export async function getBreakdown(
         status: { in: REVENUE_STATUSES },
       },
     },
-    include: { product: { include: { category: true } } },
+    include: { product: { include: { category: { include: { translations: true } } } } },
   });
 
-  const byType = new Map<ProductType, TypeBreakdown>();
+  const byType = new Map<CategoryKind, TypeBreakdown>();
   const byCategory = new Map<string, CategoryBreakdown>();
 
   for (const item of items) {
     const revenue = toNumber(item.lineTotal);
     if (item.product) {
-      const type = item.product.type;
+      const type = item.product.category.kind;
       const typeEntry = byType.get(type) ?? { type, revenue: 0, qty: 0 };
       typeEntry.revenue += revenue;
       typeEntry.qty += item.qty;
@@ -196,7 +198,7 @@ export async function getBreakdown(
       const category = item.product.category;
       const catEntry = byCategory.get(category.id) ?? {
         categoryId: category.id,
-        categoryName: category.name,
+        categoryName: adminName(category.translations, category.slug),
         revenue: 0,
         qty: 0,
       };

@@ -3,191 +3,137 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireAdminSession } from "@/lib/auth-guard";
-import { productSchema } from "@/lib/validation";
-import { getStorageAdapter, uploadImage, UploadValidationError } from "@/lib/uploads";
+import { flattenZodError, productSchema, type ProductInput } from "@/lib/validation";
+import { getStorageAdapter, uploadImage, uploadKeyFromUrl, UploadValidationError } from "@/lib/uploads";
+import { LOCALES } from "@/lib/i18n/locales";
+import { revalidatePublicSite } from "@/lib/admin-data";
+import type { ActionResult } from "@/lib/action-result";
 import type { Prisma } from "@/lib/generated/prisma/client";
 
-export interface ActionResult {
-  ok: boolean;
-  error?: string;
-  fieldErrors?: Record<string, string>;
-  id?: string;
-}
+const json = (value: unknown) => value as Prisma.InputJsonValue;
 
-function safeJsonArray(value: FormDataEntryValue | null): unknown[] {
-  if (typeof value !== "string" || !value) return [];
-  try {
-    const parsed = JSON.parse(value);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
-
-function parseProductForm(formData: FormData) {
-  return productSchema.safeParse({
-    name: formData.get("name"),
-    slug: formData.get("slug"),
-    description: formData.get("description") ?? "",
-    shortDescription: formData.get("shortDescription") ?? "",
-    categoryId: formData.get("categoryId"),
-    type: formData.get("type"),
-    price: formData.get("price"),
-    oldPrice: formData.get("oldPrice") || null,
-    isAlcohol: formData.get("isAlcohol") === "on",
-    isVegetarian: formData.get("isVegetarian") === "on",
-    isSpicy: formData.get("isSpicy") === "on",
-    isActive: formData.get("isActive") === "on",
-    isFeatured: formData.get("isFeatured") === "on",
-    sku: formData.get("sku") ?? "",
-    sortOrder: formData.get("sortOrder") || 0,
-    stock: formData.get("stock") || null,
-    ingredients: safeJsonArray(formData.get("ingredients")),
-    variants: safeJsonArray(formData.get("variants")),
-    seoTitle: formData.get("seoTitle") ?? "",
-    seoDescription: formData.get("seoDescription") ?? "",
-    seoKeywords: formData.get("seoKeywords") ?? "",
+function translationRows(input: ProductInput) {
+  return LOCALES.filter((l) => input.translations[l].name.length > 0).map((locale) => {
+    const t = input.translations[locale];
+    return {
+      locale,
+      name: t.name,
+      shortDescription: t.shortDescription || null,
+      description: t.description || null,
+      ingredientsText: t.ingredientsText || null,
+      seoTitle: t.seoTitle || null,
+      seoDescription: t.seoDescription || null,
+      seoKeywords: t.seoKeywords || null,
+      shortAnswer: t.shortAnswer || null,
+      imageAlt: t.imageAlt || null,
+    };
   });
 }
 
-function flatten(error: import("zod").ZodError): Record<string, string> {
-  const result: Record<string, string> = {};
-  for (const issue of error.issues) {
-    const key = issue.path[0]?.toString() ?? "form";
-    if (!result[key]) result[key] = issue.message;
-  }
-  return result;
+function productData(input: ProductInput) {
+  const images = input.images.filter((url, i, all) => url && all.indexOf(url) === i);
+  return {
+    slug: input.slug,
+    categoryId: input.categoryId,
+    price: input.price,
+    oldPrice: input.oldPrice ?? null,
+    isAlcohol: input.isAlcohol,
+    isVegetarian: input.isVegetarian,
+    isSpicy: input.isSpicy,
+    isActive: input.isActive,
+    isFeatured: input.isFeatured,
+    sku: input.sku || null,
+    sortOrder: input.sortOrder,
+    stock: input.stock ?? null,
+    // Первое фото — главное, все фото по порядку — галерея
+    imageUrl: images[0] ?? null,
+    galleryUrls: json(images),
+    ogImageUrl: input.ogImageUrl || null,
+    // Пустой список вариантов тоже сохраняется (раньше удалённые варианты «возвращались»)
+    variants: json(input.variants),
+  };
 }
 
-async function handleImages(formData: FormData) {
-  const mainImageFile = formData.get("mainImage");
-  let imageUrl = (formData.get("existingImageUrl") as string) || null;
-
-  if (mainImageFile instanceof File && mainImageFile.size > 0) {
-    const uploaded = await uploadImage(mainImageFile, "products");
-    imageUrl = uploaded.url;
-  }
-
-  const keptGallery = safeJsonArray(formData.get("existingGalleryUrls")) as string[];
-  const newGalleryFiles = formData.getAll("galleryImages").filter(
-    (f): f is File => f instanceof File && f.size > 0
-  );
-  const uploadedGallery: string[] = [];
-  for (const file of newGalleryFiles) {
-    const uploaded = await uploadImage(file, "products");
-    uploadedGallery.push(uploaded.url);
-  }
-
-  const galleryUrls = [...keptGallery, ...uploadedGallery];
-  if (imageUrl && !galleryUrls.includes(imageUrl)) {
-    galleryUrls.unshift(imageUrl);
-  }
-
-  return { imageUrl, galleryUrls };
-}
-
-export async function createProduct(formData: FormData): Promise<ActionResult> {
-  await requireAdminSession();
-  const parsed = parseProductForm(formData);
-  if (!parsed.success) {
-    return { ok: false, error: "Проверьте поля формы", fieldErrors: flatten(parsed.error) };
-  }
-
-  const existing = await prisma.product.findUnique({ where: { slug: parsed.data.slug } });
-  if (existing) {
-    return { ok: false, fieldErrors: { slug: "Такой slug уже используется" } };
-  }
-
-  let images: { imageUrl: string | null; galleryUrls: string[] };
-  try {
-    images = await handleImages(formData);
-  } catch (error) {
-    if (error instanceof UploadValidationError) {
-      return { ok: false, error: error.message };
-    }
-    throw error;
-  }
-
-  const { variants, ...rest } = parsed.data;
-
-  const product = await prisma.product.create({
-    data: {
-      ...rest,
-      oldPrice: parsed.data.oldPrice ?? null,
-      stock: parsed.data.stock ?? null,
-      imageUrl: images.imageUrl,
-      galleryUrls: images.galleryUrls as unknown as Prisma.InputJsonValue,
-      ingredients: parsed.data.ingredients as unknown as Prisma.InputJsonValue,
-      variants: (variants && variants.length > 0
-        ? variants
-        : undefined) as unknown as Prisma.InputJsonValue,
-    },
-  });
-
+function done(slug?: string): void {
   revalidatePath("/admin/products");
-  revalidatePath("/menu");
+  if (slug) revalidatePath(`/admin/products`, "layout");
+  revalidatePublicSite();
+}
+
+/** Удаляет из хранилища фото, которые больше не используются ни одним товаром/группой/настройками */
+async function removeUnusedImages(urls: string[]) {
+  for (const url of urls) {
+    const key = uploadKeyFromUrl(url);
+    if (!key || key.startsWith("seed/")) continue;
+    const [products, categories, settings] = await Promise.all([
+      prisma.product.count({
+        where: { OR: [{ imageUrl: url }, { ogImageUrl: url }, { galleryUrls: { array_contains: [url] } }] },
+      }),
+      prisma.category.count({ where: { imageUrl: url } }),
+      prisma.settings.count({ where: { OR: [{ logoUrl: url }, { faviconUrl: url }, { heroImageUrl: url }] } }),
+    ]);
+    if (products + categories + settings === 0) await getStorageAdapter().remove(key);
+  }
+}
+
+export async function createProduct(raw: unknown): Promise<ActionResult> {
+  await requireAdminSession();
+  const parsed = productSchema.safeParse(raw);
+  if (!parsed.success) return { ok: false, error: "Проверьте поля формы", fieldErrors: flattenZodError(parsed.error) };
+
+  if (await prisma.product.findUnique({ where: { slug: parsed.data.slug } })) {
+    return { ok: false, fieldErrors: { slug: "Такой адрес (slug) уже используется" } };
+  }
+  const product = await prisma.product.create({
+    data: { ...productData(parsed.data), translations: { create: translationRows(parsed.data) } },
+  });
+  done(product.slug);
   return { ok: true, id: product.id };
 }
 
-export async function updateProduct(id: string, formData: FormData): Promise<ActionResult> {
+export async function updateProduct(id: string, raw: unknown): Promise<ActionResult> {
   await requireAdminSession();
-  const parsed = parseProductForm(formData);
-  if (!parsed.success) {
-    return { ok: false, error: "Проверьте поля формы", fieldErrors: flatten(parsed.error) };
-  }
+  const parsed = productSchema.safeParse(raw);
+  if (!parsed.success) return { ok: false, error: "Проверьте поля формы", fieldErrors: flattenZodError(parsed.error) };
 
-  const existing = await prisma.product.findFirst({
-    where: { slug: parsed.data.slug, NOT: { id } },
-  });
-  if (existing) {
-    return { ok: false, fieldErrors: { slug: "Такой slug уже используется" } };
+  if (await prisma.product.findFirst({ where: { slug: parsed.data.slug, NOT: { id } } })) {
+    return { ok: false, fieldErrors: { slug: "Такой адрес (slug) уже используется" } };
   }
-
   const current = await prisma.product.findUnique({ where: { id } });
   if (!current) return { ok: false, error: "Товар не найден" };
 
-  let images: { imageUrl: string | null; galleryUrls: string[] };
-  try {
-    images = await handleImages(formData);
-  } catch (error) {
-    if (error instanceof UploadValidationError) {
-      return { ok: false, error: error.message };
-    }
-    throw error;
-  }
+  const data = productData(parsed.data);
+  const rows = translationRows(parsed.data);
+  await prisma.$transaction([
+    prisma.product.update({ where: { id }, data }),
+    prisma.productTranslation.deleteMany({ where: { productId: id, locale: { notIn: rows.map((r) => r.locale) } } }),
+    ...rows.map((row) =>
+      prisma.productTranslation.upsert({
+        where: { productId_locale: { productId: id, locale: row.locale } },
+        update: row,
+        create: { ...row, productId: id },
+      })
+    ),
+  ]);
 
-  if (current.imageUrl && current.imageUrl !== images.imageUrl && current.imageUrl.startsWith("/uploads/")) {
-    await getStorageAdapter().remove(current.imageUrl.replace("/uploads/", ""));
-  }
+  // Фото, убранные из товара, удаляем с диска только после сохранения
+  // (раньше старое фото удалялось, а страницы сайта ещё ссылались на него).
+  const before = new Set<string>([
+    ...(current.imageUrl ? [current.imageUrl] : []),
+    ...(current.ogImageUrl ? [current.ogImageUrl] : []),
+    ...(Array.isArray(current.galleryUrls) ? (current.galleryUrls as string[]) : []),
+  ]);
+  const after = new Set<string>([...(parsed.data.images ?? []), ...(data.ogImageUrl ? [data.ogImageUrl] : [])]);
+  await removeUnusedImages([...before].filter((url) => !after.has(url)));
 
-  const { variants, ...rest } = parsed.data;
-
-  await prisma.product.update({
-    where: { id },
-    data: {
-      ...rest,
-      oldPrice: parsed.data.oldPrice ?? null,
-      stock: parsed.data.stock ?? null,
-      imageUrl: images.imageUrl,
-      galleryUrls: images.galleryUrls as unknown as Prisma.InputJsonValue,
-      ingredients: parsed.data.ingredients as unknown as Prisma.InputJsonValue,
-      variants: (variants && variants.length > 0
-        ? variants
-        : undefined) as unknown as Prisma.InputJsonValue,
-    },
-  });
-
-  revalidatePath("/admin/products");
-  revalidatePath(`/menu/${parsed.data.slug}`);
-  revalidatePath("/menu");
+  done(parsed.data.slug);
   return { ok: true, id };
 }
 
 export async function toggleProductActive(id: string, isActive: boolean): Promise<ActionResult> {
   await requireAdminSession();
   await prisma.product.update({ where: { id }, data: { isActive } });
-  revalidatePath("/admin/products");
-  revalidatePath("/menu");
+  done();
   return { ok: true };
 }
 
@@ -195,13 +141,31 @@ export async function deleteProduct(id: string): Promise<ActionResult> {
   await requireAdminSession();
   const usedInOrders = await prisma.orderItem.count({ where: { productId: id } });
   if (usedInOrders > 0) {
-    return {
-      ok: false,
-      error: "Нельзя удалить товар: он есть в истории заказов. Скройте его вместо удаления.",
-    };
+    return { ok: false, error: "Нельзя удалить товар: он есть в истории заказов. Скройте его вместо удаления." };
   }
-  await prisma.product.delete({ where: { id } });
-  revalidatePath("/admin/products");
-  revalidatePath("/menu");
+  const product = await prisma.product.delete({ where: { id } });
+  await removeUnusedImages([
+    ...(product.imageUrl ? [product.imageUrl] : []),
+    ...(Array.isArray(product.galleryUrls) ? (product.galleryUrls as string[]) : []),
+  ]);
+  done();
   return { ok: true };
+}
+
+/** Загрузка фото сразу при выборе файла (форма товара потом сохраняет только ссылки) */
+export async function uploadProductImages(formData: FormData): Promise<ActionResult> {
+  await requireAdminSession();
+  const files = formData.getAll("files").filter((f): f is File => f instanceof File && f.size > 0);
+  if (files.length === 0) return { ok: false, error: "Файлы не выбраны" };
+  if (files.length > 10) return { ok: false, error: "За один раз — не больше 10 фото" };
+  const folder = formData.get("folder") === "categories" ? "categories" : "products";
+  try {
+    const urls: string[] = [];
+    for (const file of files) urls.push((await uploadImage(file, folder)).url);
+    revalidatePath("/admin/media");
+    return { ok: true, urls };
+  } catch (error) {
+    if (error instanceof UploadValidationError) return { ok: false, error: error.message };
+    throw error;
+  }
 }

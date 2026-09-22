@@ -12,7 +12,7 @@ function item(overrides: Partial<CartPricingItemInput> = {}): CartPricingItemInp
     id: "line-1",
     productId: "prod-1",
     categoryId: "cat-pizza",
-    type: "PIZZA",
+    kind: "PIZZA",
     unitPrice: 100,
     qty: 1,
     ...overrides,
@@ -165,5 +165,39 @@ describe("calculateCartPricing", () => {
 
     expect(result.items[0].lineTotal).toBe(210);
     expect(result.discountTotal).toBe(90);
+  });
+});
+
+describe("промо по типу группы и промокоды", () => {
+  it("PRODUCT_TYPE-промо применяется к товарам групп нужного типа (kind)", () => {
+    const items = [
+      item({ id: "a", productId: "wine", categoryId: "cat-alcohol", kind: "ALCOHOL", unitPrice: 200 }),
+      item({ id: "b", productId: "pizza", categoryId: "cat-pizza", kind: "PIZZA", unitPrice: 100 }),
+    ];
+    const result = calculateCartPricing(
+      items,
+      [promo({ scope: "PRODUCT_TYPE", targetIds: ["ALCOHOL"], value: 10 })],
+      NOW
+    );
+    expect(result.items[0].discount).toBe(20);
+    expect(result.items[1].discount).toBe(0);
+  });
+
+  it("своя группа (CUSTOM) не попадает под промо на тип PIZZA", () => {
+    const result = calculateCartPricing(
+      [item({ kind: "CUSTOM", categoryId: "cat-new" })],
+      [promo({ scope: "PRODUCT_TYPE", targetIds: ["PIZZA"] })],
+      NOW
+    );
+    expect(result.discountTotal).toBe(0);
+  });
+
+  it("публичные названия промо на 4 языках попадают в снимок заказа", () => {
+    const result = calculateCartPricing(
+      [item()],
+      [promo({ publicNames: { ro: "Reducere", ru: "Скидка", en: "Discount", it: "Sconto" } })],
+      NOW
+    );
+    expect(result.appliedPromos[0].publicNames?.ro).toBe("Reducere");
   });
 });

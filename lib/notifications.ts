@@ -1,23 +1,32 @@
+import "server-only";
+import { createTranslator } from "next-intl";
 import { prisma } from "@/lib/prisma";
 import { getEmailProvider } from "@/lib/email";
-import {
-  FULFILLMENT_LABELS,
-  ORDER_STATUS_LABELS,
-} from "@/lib/constants";
+import { FULFILLMENT_LABELS, ORDER_STATUS_LABELS, PAYMENT_METHOD_LABELS } from "@/lib/constants";
 import { formatMoney } from "@/lib/format";
-import type {
-  Order,
-  OrderItem,
-  OrderStatus,
-  Prisma,
-} from "@/lib/generated/prisma/client";
+import { getMessagesFor } from "@/lib/i18n/messages";
+import { LOCALE_LABELS, isLocale, localizedPath, type AppLocale } from "@/lib/i18n/locales";
+import { getSiteUrl } from "@/lib/site-url";
+import type { Order, OrderItem, OrderStatus, Prisma } from "@/lib/generated/prisma/client";
 
 type OrderForNotification = Order & { items: OrderItem[] };
 
-function orderItemsList(items: OrderItem[]): string {
-  return items
-    .map((item) => `• ${item.nameSnapshot} × ${item.qty} — ${formatMoney(item.lineTotal)}`)
-    .join("\n");
+export function orderNumber(order: Pick<Order, "id">): string {
+  return order.id.slice(-8).toUpperCase();
+}
+
+export function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function variantLabel(item: OrderItem): string {
+  const snap = item.variantSnapshot as { name?: string } | null;
+  return snap?.name ? ` (${snap.name})` : "";
 }
 
 async function logNotification(
@@ -27,23 +36,33 @@ async function logNotification(
   status: "SENT" | "FAILED",
   error?: string
 ) {
-  await prisma.notificationLog.create({
-    data: {
-      channel,
-      type,
-      payload: payload as unknown as Prisma.InputJsonValue,
-      status,
-      error: error ?? null,
-    },
-  });
+  try {
+    await prisma.notificationLog.create({
+      data: {
+        channel,
+        type,
+        payload: payload as unknown as Prisma.InputJsonValue,
+        status,
+        error: error ?? null,
+      },
+    });
+  } catch (logError) {
+    console.error("[notifications] failed to write log:", logError);
+  }
 }
+
+/* ─────────────── Telegram (для персонала — на русском) ─────────────── */
 
 async function sendTelegramMessage(text: string): Promise<void> {
   const token = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
+  const settings = await prisma.settings.findUnique({
+    where: { id: "main" },
+    select: { telegramChatId: true },
+  });
+  const chatId = settings?.telegramChatId || process.env.TELEGRAM_ADMIN_CHAT_ID;
 
   if (!token || !chatId) {
-    throw new Error("not configured: TELEGRAM_BOT_TOKEN / TELEGRAM_ADMIN_CHAT_ID missing");
+    throw new Error("not configured: TELEGRAM_BOT_TOKEN / chat id missing");
   }
 
   const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
@@ -63,22 +82,34 @@ async function sendTelegramMessage(text: string): Promise<void> {
   }
 }
 
-function buildOrderTelegramText(
-  order: OrderForNotification,
-  headline: string
-): string {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+export function buildOrderTelegramText(order: OrderForNotification, headline: string): string {
+  const e = escapeHtml;
   const lines = [
-    `<b>${headline}</b>`,
-    `Заказ №${order.id.slice(-8).toUpperCase()}`,
+    `<b>${e(headline)}</b>`,
+    `Заказ №${orderNumber(order)}`,
     `Статус: ${ORDER_STATUS_LABELS[order.status]}`,
-    `Клиент: ${order.customerName}`,
-    `Телефон: ${order.phone}`,
+    `Клиент: ${e(order.customerName)}`,
+    `Телефон: ${e(order.phone)}`,
+    `Язык клиента: ${isLocale(order.locale) ? LOCALE_LABELS[order.locale] : order.locale}`,
     `Получение: ${FULFILLMENT_LABELS[order.fulfillment]}`,
+    `Оплата: ${PAYMENT_METHOD_LABELS[order.paymentMethod]}`,
   ];
-  if (order.address) lines.push(`Адрес: ${order.address}`);
-  lines.push("", orderItemsList(order.items), "", `Итого: ${formatMoney(order.total)}`);
-  lines.push("", `${siteUrl}/admin/orders/${order.id}`);
+  if (order.deliveryCityName || order.deliveryZoneName) {
+    lines.push(`Район: ${e([order.deliveryCityName, order.deliveryZoneName].filter(Boolean).join(", "))}`);
+  }
+  if (order.address) lines.push(`Адрес: ${e(order.address)}`);
+  if (order.ageConfirmed) lines.push("⚠️ В заказе алкоголь — проверить возраст (18+)");
+  if (order.comment) lines.push(`Комментарий: ${e(order.comment)}`);
+  lines.push(
+    "",
+    ...order.items.map(
+      (item) =>
+        `• ${e(item.nameSnapshot)}${e(variantLabel(item))} × ${item.qty} — ${formatMoney(item.lineTotal, "admin")}`
+    ),
+    ""
+  );
+  if (Number(order.deliveryFee) > 0) lines.push(`Доставка: ${formatMoney(order.deliveryFee, "admin")}`);
+  lines.push(`<b>Итого: ${formatMoney(order.total, "admin")}</b>`, "", `${getSiteUrl()}/admin/orders/${order.id}`);
   return lines.join("\n");
 }
 
@@ -94,15 +125,11 @@ async function trySendTelegram(
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`[notifications] telegram ${type} failed:`, message);
-    await logNotification(
-      "TELEGRAM",
-      type,
-      { orderId: order.id, text },
-      "FAILED",
-      message
-    );
+    await logNotification("TELEGRAM", type, { orderId: order.id, text }, "FAILED", message);
   }
 }
+
+/* ─────────────── Email ─────────────── */
 
 async function trySendEmail(
   to: string,
@@ -118,107 +145,100 @@ async function trySendEmail(
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`[notifications] email ${type} failed:`, message);
-    await logNotification(
-      "EMAIL",
-      type,
-      { orderId, to, subject },
-      "FAILED",
-      message
-    );
+    await logNotification("EMAIL", type, { orderId, to, subject }, "FAILED", message);
   }
 }
 
-function orderEmailBody(order: OrderForNotification, intro: string): { html: string; text: string } {
-  const itemsText = order.items
-    .map((item) => `${item.nameSnapshot} × ${item.qty} — ${formatMoney(item.lineTotal)}`)
-    .join("\n");
-  const itemsHtml = order.items
-    .map(
-      (item) =>
-        `<tr><td>${item.nameSnapshot}</td><td>× ${item.qty}</td><td>${formatMoney(item.lineTotal)}</td></tr>`
-    )
-    .join("");
+/** Письмо клиенту — на языке, на котором он оформлял заказ. */
+async function customerEmail(order: OrderForNotification, kind: "received" | "status") {
+  const locale: AppLocale = isLocale(order.locale) ? order.locale : "ro";
+  const messages = await getMessagesFor(locale);
+  // Словарь собирается динамически (с правками из админки), поэтому ключи не типизированы
+  const t = createTranslator({ locale, messages }) as unknown as (
+    key: string,
+    values?: Record<string, string | number>
+  ) => string;
+  const number = orderNumber(order);
+  const status = t(`order.status.${order.status}`);
+  const trackUrl = `${getSiteUrl()}${localizedPath(locale, `/order/${order.publicToken}`)}`;
+  const money = (value: unknown) => formatMoney(value, locale);
 
+  const subject =
+    kind === "received"
+      ? t("email.receivedSubject", { number })
+      : t("email.statusSubject", { number, status });
+  const intro = kind === "received" ? t("email.receivedIntro") : t("email.statusIntro", { status });
+
+  const itemsText = order.items.map(
+    (item) => `${item.nameSnapshot}${variantLabel(item)} × ${item.qty} — ${money(item.lineTotal)}`
+  );
   const text = [
     intro,
-    `Заказ №${order.id.slice(-8).toUpperCase()}`,
-    `Статус: ${ORDER_STATUS_LABELS[order.status]}`,
+    t("email.number", { number }),
+    t("email.status", { status }),
     "",
-    itemsText,
+    ...itemsText,
     "",
-    `Итого: ${formatMoney(order.total)}`,
+    t("email.total", { total: money(order.total) }),
+    t("email.track", { url: trackUrl }),
   ].join("\n");
 
+  const e = escapeHtml;
   const html = `
-    <div style="font-family: sans-serif; color: #2a1e16;">
-      <h2>${intro}</h2>
-      <p>Заказ №${order.id.slice(-8).toUpperCase()}</p>
-      <p>Статус: <strong>${ORDER_STATUS_LABELS[order.status]}</strong></p>
-      <table style="width:100%; border-collapse: collapse;">${itemsHtml}</table>
-      <p style="margin-top:16px;"><strong>Итого: ${formatMoney(order.total)}</strong></p>
-    </div>
-  `;
+<div style="font-family: Georgia, 'Times New Roman', serif; color: #2b2118; background: #f6ebd8; padding: 24px;">
+  <div style="max-width: 560px; margin: 0 auto; background: #fff8ee; border: 1px solid #c7a15a; border-radius: 12px; padding: 24px;">
+    <p style="margin: 0; font-size: 26px; font-style: italic; font-weight: 700; color: #7a1f1f;">La Storia</p>
+    <p style="margin: 2px 0 16px; font-style: italic; color: #6b5646;">Pizzeria tradizionale italiana</p>
+    <h1 style="font-size: 18px; margin: 0 0 12px;">${e(intro)}</h1>
+    <p style="margin: 0 0 4px;">${e(t("email.number", { number }))}</p>
+    <p style="margin: 0 0 16px;"><strong>${e(t("email.status", { status }))}</strong></p>
+    <table style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif; font-size: 14px;">
+      ${order.items
+        .map(
+          (item) =>
+            `<tr><td style="padding: 6px 0; border-bottom: 1px solid #e2cfae;">${e(item.nameSnapshot)}${e(variantLabel(item))}</td><td style="padding: 6px 0; border-bottom: 1px solid #e2cfae; text-align: center;">× ${item.qty}</td><td style="padding: 6px 0; border-bottom: 1px solid #e2cfae; text-align: right;">${e(money(item.lineTotal))}</td></tr>`
+        )
+        .join("")}
+    </table>
+    <p style="margin: 16px 0; font-size: 16px;"><strong>${e(t("email.total", { total: money(order.total) }))}</strong></p>
+    <p style="margin: 0;"><a href="${e(trackUrl)}" style="color: #7a1f1f;">${e(trackUrl)}</a></p>
+  </div>
+</div>`;
 
-  return { html, text };
+  return { subject, html, text };
+}
+
+/** Письмо администратору — на русском. */
+function adminEmail(order: OrderForNotification) {
+  const text = buildOrderTelegramText(order, "Новый заказ на сайте").replace(/<[^>]+>/g, "");
+  const html = `<pre style="font-family: Arial, sans-serif; white-space: pre-wrap;">${buildOrderTelegramText(order, "Новый заказ на сайте")}</pre>`;
+  return { subject: `Новый заказ №${orderNumber(order)}`, html, text };
 }
 
 export async function notifyNewOrder(order: OrderForNotification): Promise<void> {
   await trySendTelegram(order, "NEW_ORDER", "Новый заказ, ожидает подтверждения");
 
-  const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL;
-  if (adminEmail) {
-    const { html, text } = orderEmailBody(order, "Новый заказ на сайте");
-    await trySendEmail(
-      adminEmail,
-      `Новый заказ №${order.id.slice(-8).toUpperCase()}`,
-      html,
-      text,
-      "NEW_ORDER",
-      order.id
-    );
+  const adminTo = process.env.ADMIN_NOTIFICATION_EMAIL;
+  if (adminTo) {
+    const mail = adminEmail(order);
+    await trySendEmail(adminTo, mail.subject, mail.html, mail.text, "NEW_ORDER", order.id);
   }
 
   if (order.email) {
-    const { html, text } = orderEmailBody(
-      order,
-      "Спасибо! Ваш заказ принят и ожидает подтверждения оператором"
-    );
-    await trySendEmail(
-      order.email,
-      `Ваш заказ №${order.id.slice(-8).toUpperCase()} принят`,
-      html,
-      text,
-      "NEW_ORDER",
-      order.id
-    );
+    const mail = await customerEmail(order, "received");
+    await trySendEmail(order.email, mail.subject, mail.html, mail.text, "NEW_ORDER", order.id);
   }
 }
 
-const NOTIFIABLE_STATUS_CHANGES: OrderStatus[] = [
-  "CONFIRMED",
-  "CANCELLED",
-  "COMPLETED",
-];
+const NOTIFIABLE_STATUS_CHANGES: OrderStatus[] = ["CONFIRMED", "CANCELLED", "COMPLETED"];
 
-export async function notifyOrderStatusChange(
-  order: OrderForNotification
-): Promise<void> {
+export async function notifyOrderStatusChange(order: OrderForNotification): Promise<void> {
   if (!NOTIFIABLE_STATUS_CHANGES.includes(order.status)) return;
 
   await trySendTelegram(order, "STATUS_CHANGED", "Статус заказа изменён");
 
   if (order.email) {
-    const { html, text } = orderEmailBody(
-      order,
-      `Статус вашего заказа изменён: ${ORDER_STATUS_LABELS[order.status]}`
-    );
-    await trySendEmail(
-      order.email,
-      `Заказ №${order.id.slice(-8).toUpperCase()}: ${ORDER_STATUS_LABELS[order.status]}`,
-      html,
-      text,
-      "STATUS_CHANGED",
-      order.id
-    );
+    const mail = await customerEmail(order, "status");
+    await trySendEmail(order.email, mail.subject, mail.html, mail.text, "STATUS_CHANGED", order.id);
   }
 }

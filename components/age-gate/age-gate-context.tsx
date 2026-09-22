@@ -9,19 +9,24 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 
 const AGE_GATE_STORAGE_KEY = "lastoria:age-confirmed";
 
 interface AgeGateContextValue {
   confirmed: boolean;
+  /** sessionStorage уже прочитан */
+  ready: boolean;
   requestConfirmation: () => Promise<boolean>;
 }
 
 const AgeGateContext = React.createContext<AgeGateContextValue | null>(null);
 
 export function AgeGateProvider({ children }: { children: React.ReactNode }) {
+  const t = useTranslations("ageGate");
   const [confirmed, setConfirmed] = React.useState(false);
+  const [ready, setReady] = React.useState(false);
   const [open, setOpen] = React.useState(false);
   const resolverRef = React.useRef<((value: boolean) => void) | null>(null);
 
@@ -35,6 +40,7 @@ export function AgeGateProvider({ children }: { children: React.ReactNode }) {
       } catch {
         // ignore
       }
+      setReady(true);
     });
   }, []);
 
@@ -65,22 +71,22 @@ export function AgeGateProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AgeGateContext.Provider value={{ confirmed, requestConfirmation }}>
+    <AgeGateContext.Provider value={{ confirmed, ready, requestConfirmation }}>
       {children}
       <Dialog open={open} onOpenChange={(next) => !next && handleDecline()}>
-        <DialogContent hideClose>
+        <DialogContent hideClose className="plaque max-w-md border-border-strong">
           <DialogHeader>
-            <DialogTitle>Подтверждение возраста 18+</DialogTitle>
-            <DialogDescription>
-              Раздел содержит алкогольную продукцию. Продажа алкоголя лицам младше 18 лет
-              запрещена. Подтвердите, что вам уже исполнилось 18 лет.
-            </DialogDescription>
+            <p aria-hidden="true" className="mx-auto flex size-14 items-center justify-center rounded-full bg-charcoal font-display text-xl font-bold text-cream">
+              18+
+            </p>
+            <DialogTitle className="text-center font-display text-xl text-primary">{t("title")}</DialogTitle>
+            <DialogDescription className="text-center text-base">{t("text")}</DialogDescription>
           </DialogHeader>
-          <DialogFooter>
+          <DialogFooter className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             <Button variant="outline" onClick={handleDecline}>
-              Мне нет 18
+              {t("decline")}
             </Button>
-            <Button onClick={handleConfirm}>Мне есть 18 лет</Button>
+            <Button onClick={handleConfirm}>{t("confirm")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

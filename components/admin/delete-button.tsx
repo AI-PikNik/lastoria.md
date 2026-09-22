@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { ActionResult } from "@/lib/actions/categories";
+import type { ActionResult } from "@/lib/action-result";
 
 export function DeleteButton({
   action,

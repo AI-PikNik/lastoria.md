@@ -1,0 +1,377 @@
+{
+  "meta": {
+    "subtitle": "Pizzeria tradizionale italiana",
+    "tagline": "La vera pizza nasce da una grande storia.",
+    "defaultTitle": "La Storia — traditional Italian pizzeria in Chișinău",
+    "defaultDescription": "Oven-baked pizza, drinks and desserts with delivery across Chișinău or pickup. Order online in a couple of minutes.",
+    "city": "Chișinău"
+  },
+  "common": {
+    "currency": "MDL",
+    "loading": "Loading…",
+    "close": "Close",
+    "skipToContent": "Skip to content"
+  },
+  "nav": {
+    "home": "Home",
+    "menu": "Menu",
+    "delivery": "Delivery",
+    "about": "About",
+    "contacts": "Contact",
+    "cart": "Cart",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "language": "Language",
+    "mainNav": "Main navigation",
+    "breadcrumbs": "Breadcrumbs"
+  },
+  "header": {
+    "call": "Call us",
+    "cartLabel": "Cart, items: {count}",
+    "cart": "Cart"
+  },
+  "footer": {
+    "about": "Italian pizzeria in Chișinău. Pizza, drinks and desserts for delivery or pickup.",
+    "info": "Information",
+    "hours": "Opening hours",
+    "address": "Address",
+    "phone": "Phone",
+    "rights": "All rights reserved.",
+    "links": {
+      "about": "About",
+      "delivery": "Delivery & payment",
+      "contacts": "Contact",
+      "agePolicy": "Alcohol 18+",
+      "privacy": "Privacy policy",
+      "terms": "Terms of sale",
+      "cookies": "Cookie policy"
+    }
+  },
+  "home": {
+    "heroCta": "See the menu",
+    "heroSecondary": "Delivery terms",
+    "heroImageAlt": "La Storia poster: a family by the wood-fired oven, a Margherita pizza on the peel",
+    "hitsTitle": "Favourites",
+    "allMenu": "Full menu",
+    "promosTitle": "Special offers",
+    "storyTitle": "The La Storia story",
+    "story": {
+      "p1": "Real pizza starts with patience: the dough needs time, the fire is never rushed, and simple ingredients speak the loudest.",
+      "p2": "That is why La Storia cooks the Italian way — tomato sauce, mozzarella, basil and olive oil, baked to a golden crust.",
+      "p3": "Order online and an operator will call you to confirm."
+    },
+    "deliveryTitle": "Delivery",
+    "deliveryText": "We deliver across the sectors of Chișinău. Minimum order — {min}.",
+    "pickupTitle": "Pickup",
+    "pickupText": "Collect your order yourself — no delivery fee.",
+    "paymentTitle": "Payment",
+    "paymentText": "Cash or card to the courier / at the counter.",
+    "factsTitle": "At a glance",
+    "shortAnswerTitle": "Short answer",
+    "shortAnswer": "{brand} is an Italian pizzeria in {city}. We sell pizza, soft drinks, alcohol (18+ only) and snacks. Orders are placed online on the website; an operator calls back to confirm. We deliver across the city's sectors, and pickup is available. Opening hours: {hours}. Minimum order: {min}. Prices are in MDL, payment by cash or card on receipt.",
+    "heroTitle": "Traditional Italian pizza in Chișinău",
+    "groupsTitle": "What we cook",
+    "groupsSubtitle": "Pick a menu section",
+    "hitsSubtitle": "Our guests' choice",
+    "promosSubtitle": "Special prices right now",
+    "storySubtitle": "Pizza, Pasta, Amore, Sempre"
+  },
+  "facts": {
+    "hours": "Opening hours",
+    "minOrder": "Minimum order",
+    "fulfillment": "Delivery & pickup",
+    "fulfillmentValue": "City delivery and pickup",
+    "currency": "Currency",
+    "alcohol": "Alcohol",
+    "alcoholValue": "18+ only",
+    "phone": "Phone"
+  },
+  "menu": {
+    "title": "Menu",
+    "description": "{brand} menu: pizza, drinks, alcohol and snacks. Order online for delivery or pickup.",
+    "groupDescription": "{group} on the {brand} menu. Order online with delivery in Chișinău.",
+    "all": "Full menu",
+    "groups": "Product groups",
+    "filters": "Filters",
+    "apply": "Apply",
+    "reset": "Reset",
+    "onlyPromo": "Offers only",
+    "spicy": "Spicy",
+    "vegetarian": "Vegetarian",
+    "alcohol": "Alcohol 18+",
+    "priceFrom": "from",
+    "priceTo": "to",
+    "price": "Price, MDL",
+    "minPrice": "Minimum price",
+    "maxPrice": "Maximum price",
+    "empty": "Nothing matches these filters. Try changing them.",
+    "showResults": "Show results",
+    "subtitle": "Pizza, drinks and more"
+  },
+  "badges": {
+    "hit": "Favourite",
+    "promo": "Offer",
+    "age18": "18+",
+    "spicy": "Spicy",
+    "vegetarian": "Veg"
+  },
+  "product": {
+    "addToCart": "Add",
+    "addToCartFull": "Add to cart",
+    "added": "“{name}” added to cart",
+    "variant": "Option",
+    "quantity": "Quantity",
+    "decrease": "Decrease quantity",
+    "increase": "Increase quantity",
+    "ingredients": "Ingredients",
+    "description": "Description",
+    "shortAnswerTitle": "In short",
+    "shortAnswer": "{name} — {category} on the {brand} menu ({city}), priced at {price}. {extra}It can be ordered online for city delivery or pickup; an operator calls back to confirm the order.",
+    "shortAnswerAlcohol": "Alcoholic product — sold to persons 18+ only. ",
+    "notFound": "Product not found",
+    "choose": "Choose",
+    "related": "You may also like"
+  },
+  "cart": {
+    "title": "Cart",
+    "empty": "Your cart is empty",
+    "emptyText": "Have a look at the menu and pick something tasty.",
+    "toMenu": "Go to menu",
+    "remove": "Remove “{name}” from cart",
+    "items": "Items",
+    "discount": "Discount",
+    "promo": "Offer “{name}”",
+    "total": "To pay",
+    "deliveryNote": "Delivery is calculated at checkout",
+    "checkout": "Checkout",
+    "removedWarning": "Some items were removed from your cart: no longer available",
+    "sticky": "Cart · {count} items · {total}",
+    "stickyCount": "{count, plural, one {# item} other {# items}}",
+    "promoCode": "Promo code",
+    "applyCode": "Apply",
+    "codeInvalid": "The code is invalid or has expired",
+    "belowMin": "Minimum order is {amount}. Add something else from the menu."
+  },
+  "checkout": {
+    "title": "Checkout",
+    "contact": "Contact details",
+    "name": "Name",
+    "phone": "Phone",
+    "phoneHint": "Format: +373 6X XXX XXX or 0XX XXX XXX",
+    "email": "Email (optional)",
+    "fulfillment": "How to receive",
+    "delivery": "Delivery",
+    "pickup": "Pickup",
+    "city": "City",
+    "zone": "District / zone",
+    "chooseZone": "Choose a zone",
+    "address": "Delivery address",
+    "addressPlaceholder": "Street, building, flat, entrance, floor",
+    "pickupAt": "Pickup at: {address}",
+    "payment": "Payment method",
+    "cash": "Cash",
+    "cardOnDelivery": "Card on receipt",
+    "comment": "Order comment",
+    "summary": "Your order",
+    "items": "Items",
+    "deliveryFee": "Delivery",
+    "free": "free",
+    "freeFrom": "free from {amount}",
+    "total": "Total",
+    "minOrder": "Minimum order — {amount}",
+    "ageConfirm": "I confirm that I am 18 or older",
+    "ageConfirmHint": "Your cart contains alcohol. The courier may ask for ID.",
+    "submit": "Place order",
+    "submitting": "Sending…",
+    "success": "Order received! Expect a call from our operator",
+    "noZones": "Delivery is unavailable right now — please choose pickup."
+  },
+  "validation": {
+    "nameRequired": "Please enter your name",
+    "phoneInvalid": "Invalid number. Use +373XXXXXXXX or 0XXXXXXXX (Moldova or Transnistria)",
+    "emailInvalid": "Invalid email",
+    "addressRequired": "Please enter the delivery address",
+    "zoneRequired": "Please choose a delivery zone",
+    "cartEmpty": "Your cart is empty",
+    "ageRequired": "Please confirm you are 18+ to order alcohol",
+    "minOrder": "Minimum order — {amount}",
+    "tooMany": "Too many attempts. Please try again a bit later.",
+    "unavailable": "Items in your cart are no longer available. Please refresh your cart.",
+    "checkForm": "Please check the form",
+    "generic": "Something went wrong. Please try again."
+  },
+  "order": {
+    "title": "Order #{number}",
+    "created": "Placed on {date}",
+    "pendingNote": "Your order is awaiting confirmation. An operator will call you shortly at the number you provided.",
+    "items": "Order items",
+    "details": "Details",
+    "fulfillment": "How to receive",
+    "address": "Address",
+    "zone": "Zone",
+    "payment": "Payment",
+    "phone": "Phone",
+    "history": "History",
+    "subtotal": "Items",
+    "discount": "Discount",
+    "delivery": "Delivery",
+    "total": "Total",
+    "status": {
+      "PENDING_CONFIRMATION": "Awaiting confirmation",
+      "CONFIRMED": "Confirmed",
+      "PREPARING": "Being prepared",
+      "OUT_FOR_DELIVERY": "On the way",
+      "READY_FOR_PICKUP": "Ready for pickup",
+      "COMPLETED": "Completed",
+      "CANCELLED": "Cancelled"
+    },
+    "pageTitle": "Order status"
+  },
+  "ageGate": {
+    "title": "Age confirmation 18+",
+    "text": "This section contains alcoholic products. Selling alcohol to persons under 18 is prohibited. Please confirm that you are 18 or older.",
+    "confirm": "I am 18+",
+    "decline": "I am under 18",
+    "pending": "Age confirmation required…"
+  },
+  "cookies": {
+    "title": "Cookies",
+    "text": "We use necessary cookies (language, cart, session). Analytics cookies only with your consent.",
+    "accept": "Accept",
+    "necessary": "Necessary only",
+    "learnMore": "Learn more",
+    "current": "Current choice",
+    "stateAll": "all cookies",
+    "stateNecessary": "necessary only",
+    "stateNone": "not made yet"
+  },
+  "lang": {
+    "label": "Language"
+  },
+  "errors": {
+    "notFoundTitle": "Page not found",
+    "notFoundText": "It may have been moved or never existed.",
+    "backHome": "Back to home",
+    "errorTitle": "Something went wrong",
+    "errorText": "Please try reloading the page.",
+    "retry": "Try again",
+    "toMenu": "See the menu"
+  },
+  "email": {
+    "receivedSubject": "Order #{number} received",
+    "receivedIntro": "Thank you! Your order has been received and is awaiting confirmation.",
+    "statusSubject": "Order #{number}: {status}",
+    "statusIntro": "Your order status has changed: {status}",
+    "number": "Order #{number}",
+    "status": "Status: {status}",
+    "total": "Total: {total}",
+    "track": "Order status: {url}"
+  },
+  "pages": {
+    "about": {
+      "title": "About",
+      "description": "La Storia — a traditional Italian pizzeria in Chișinău. How we cook and how to order.",
+      "h1": "About La Storia",
+      "body": {
+        "p1": "La Storia is a pizzeria in the traditional Italian style. The menu includes pizza, soft drinks, alcohol for adult guests, snacks, sauces and desserts.",
+        "p2": "Orders are placed online: choose your dishes, check out, and an operator will call you back to confirm. You can choose city delivery or pickup."
+      },
+      "faqTitle": "Frequently asked questions"
+    },
+    "delivery": {
+      "title": "Delivery & payment",
+      "description": "Delivery zones and prices in Chișinău, minimum order, pickup and payment methods at La Storia.",
+      "h1": "Delivery & payment",
+      "zonesTitle": "Delivery zones",
+      "zoneCol": "Zone",
+      "feeCol": "Price",
+      "minOrder": "Minimum order: {amount}.",
+      "hours": "Opening hours: {hours}.",
+      "paymentTitle": "Payment methods",
+      "paymentText": "Cash or card to the courier / at the counter on receipt. Online card payment is not available.",
+      "pickupTitle": "Pickup",
+      "pickupText": "Collect your order at: {address}.",
+      "faqTitle": "Frequently asked questions"
+    },
+    "contacts": {
+      "title": "Contact",
+      "description": "La Storia pizzeria in Chișinău: address, phone and opening hours.",
+      "h1": "Contact",
+      "phone": "Phone",
+      "email": "Email",
+      "address": "Address",
+      "hours": "Opening hours"
+    },
+    "privacy": {
+      "title": "Privacy policy",
+      "description": "How La Storia processes customers' personal data.",
+      "h1": "Privacy policy",
+      "body": {
+        "p1": "When you place an order we collect your name, phone number, delivery address and, optionally, email. This data is used only to process the order and contact you.",
+        "p2": "We do not share your data with third parties except where needed to deliver the order.",
+        "p3": "The site uses necessary cookies for language, cart and session. Analytics cookies are enabled only with your consent — see the Cookie policy.",
+        "p4": "You can request deletion of your personal data using the details on the Contact page."
+      }
+    },
+    "terms": {
+      "title": "Terms of sale",
+      "description": "Terms for placing and fulfilling orders on the La Storia website.",
+      "h1": "Terms of sale",
+      "body": {
+        "p1": "An order is considered accepted after an operator confirms it by phone.",
+        "p2": "Prices are in Moldovan lei (MDL) and may include discounts from active offers. Payment is by cash or card on receipt.",
+        "p3": "Alcoholic products are sold only to persons aged 18 and over, in accordance with the law of the Republic of Moldova."
+      }
+    },
+    "agePolicy": {
+      "title": "Alcohol 18+",
+      "description": "Terms for selling alcoholic products on the La Storia website — 18+ only.",
+      "h1": "Alcohol sales 18+",
+      "body": {
+        "p1": "The “Alcohol” section is available only to persons aged 18 or over. Before opening an alcoholic product or adding it to the cart you will be asked to confirm your age.",
+        "p2": "By placing an order with alcohol you confirm that you are 18 or older. The courier may ask for ID."
+      }
+    },
+    "cookies": {
+      "title": "Cookie policy",
+      "description": "Which cookies the La Storia website uses and how to manage your consent.",
+      "h1": "Cookie policy",
+      "body": {
+        "p1": "Necessary cookies (always on): NEXT_LOCALE — your language; the cart is kept in your browser's local storage; the admin session — staff only; ls_consent — your cookie choice.",
+        "p2": "Analytics cookies (only with consent): anonymous visit statistics, if enabled by the administrator.",
+        "p3": "You can change your choice at any time with the buttons below. If you delete the site's cookies in your browser, the banner will appear again."
+      },
+      "reset": "Change my choice"
+    },
+    "faq": {
+      "q1": {
+        "q": "How do I order?",
+        "a": "Add dishes to your cart and check out on the website. An operator will call you back to confirm."
+      },
+      "q2": {
+        "q": "Do you deliver?",
+        "a": "Yes, to the zones listed on the Delivery page. The price depends on the zone."
+      },
+      "q3": {
+        "q": "What is the minimum order?",
+        "a": "The minimum order is {min}."
+      },
+      "q4": {
+        "q": "How can I pay?",
+        "a": "Cash or card on receipt. Online payment is not available."
+      },
+      "q5": {
+        "q": "Can I pick up my order?",
+        "a": "Yes, at: {address}."
+      },
+      "q6": {
+        "q": "Do you sell alcohol?",
+        "a": "Yes, to persons 18+ only. The courier may ask for ID."
+      },
+      "q7": {
+        "q": "What are your opening hours?",
+        "a": "{hours}."
+      }
+    }
+  }
+}

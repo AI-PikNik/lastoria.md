@@ -74,7 +74,7 @@ export default async function AdminCustomersPage() {
                 <TableCell>{c.phone}</TableCell>
                 <TableCell className="text-muted-foreground">{c.email ?? "—"}</TableCell>
                 <TableCell className="text-right">{c.ordersCount}</TableCell>
-                <TableCell className="text-right">{formatMoney(c.totalSpent)}</TableCell>
+                <TableCell className="text-right">{formatMoney(c.totalSpent, "admin")}</TableCell>
                 <TableCell>{formatDateTime(c.lastOrderAt)}</TableCell>
               </TableRow>
             ))}

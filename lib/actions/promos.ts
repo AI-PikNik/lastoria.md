@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAdminSession } from "@/lib/auth-guard";
 import { promoSchema } from "@/lib/validation";
 import type { Prisma } from "@/lib/generated/prisma/client";
+import { revalidatePublicSite } from "@/lib/admin-data";
 
 export interface ActionResult {
   ok: boolean;
@@ -31,10 +32,21 @@ function safeJsonArray(value: FormDataEntryValue | null): unknown[] {
   }
 }
 
+function safeJsonObject(value: FormDataEntryValue | null): Record<string, unknown> {
+  if (typeof value !== "string" || !value) return {};
+  try {
+    const parsed = JSON.parse(value);
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
 function parsePromoForm(formData: FormData) {
   return promoSchema.safeParse({
     name: formData.get("name"),
-    code: formData.get("code") || "",
+    publicNames: safeJsonObject(formData.get("publicNames")),
+    code: String(formData.get("code") || "").toUpperCase(),
     type: formData.get("type"),
     value: formData.get("value"),
     scope: formData.get("scope"),
@@ -65,11 +77,12 @@ export async function createPromo(formData: FormData): Promise<ActionResult> {
       code: parsed.data.code || null,
       minOrderAmount: parsed.data.minOrderAmount ?? null,
       targetIds: parsed.data.targetIds as unknown as Prisma.InputJsonValue,
+      publicNames: parsed.data.publicNames as unknown as Prisma.InputJsonValue,
     },
   });
 
   revalidatePath("/admin/promos");
-  revalidatePath("/menu");
+  revalidatePublicSite();
   return { ok: true };
 }
 
@@ -94,11 +107,12 @@ export async function updatePromo(id: string, formData: FormData): Promise<Actio
       code: parsed.data.code || null,
       minOrderAmount: parsed.data.minOrderAmount ?? null,
       targetIds: parsed.data.targetIds as unknown as Prisma.InputJsonValue,
+      publicNames: parsed.data.publicNames as unknown as Prisma.InputJsonValue,
     },
   });
 
   revalidatePath("/admin/promos");
-  revalidatePath("/menu");
+  revalidatePublicSite();
   return { ok: true };
 }
 
@@ -106,7 +120,7 @@ export async function togglePromoActive(id: string, isActive: boolean): Promise<
   await requireAdminSession();
   await prisma.promo.update({ where: { id }, data: { isActive } });
   revalidatePath("/admin/promos");
-  revalidatePath("/menu");
+  revalidatePublicSite();
   return { ok: true };
 }
 
@@ -114,6 +128,6 @@ export async function deletePromo(id: string): Promise<ActionResult> {
   await requireAdminSession();
   await prisma.promo.delete({ where: { id } });
   revalidatePath("/admin/promos");
-  revalidatePath("/menu");
+  revalidatePublicSite();
   return { ok: true };
 }

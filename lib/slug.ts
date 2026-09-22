@@ -51,6 +51,8 @@ export function transliterate(input: string): string {
 
 export function slugify(input: string): string {
   return transliterate(input)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
     .trim()
     .replace(/[^a-z0-9\s-]/g, "")
     .replace(/\s+/g, "-")

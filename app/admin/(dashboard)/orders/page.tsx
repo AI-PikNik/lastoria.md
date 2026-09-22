@@ -18,7 +18,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { OrdersFilterBar } from "@/components/admin/orders-filter-bar";
-import type { Prisma, ProductType } from "@/lib/generated/prisma/client";
+import type { CategoryKind, Prisma } from "@/lib/generated/prisma/client";
+import { getCategoryOptions } from "@/lib/admin-data";
+import { LOCALE_SHORT, isLocale } from "@/lib/i18n/locales";
 
 type Tab = "all" | "pending" | "confirmed" | "cancelled" | "completed";
 
@@ -79,16 +81,16 @@ export default async function AdminOrdersPage({
     prisma.order.findMany({
       where,
       orderBy: { createdAt: "desc" },
-      include: { items: { include: { product: true } } },
+      include: { items: { include: { product: { include: { category: true } } } } },
       take: 200,
     }),
-    prisma.category.findMany({ orderBy: { sortOrder: "asc" } }),
+    getCategoryOptions(),
   ]);
 
   let filtered = orders;
   if (params.productType) {
     filtered = filtered.filter((o) =>
-      o.items.some((i) => i.product?.type === (params.productType as ProductType))
+      o.items.some((i) => i.product?.category.kind === (params.productType as CategoryKind))
     );
   }
   if (params.categoryId) {
@@ -141,6 +143,7 @@ export default async function AdminOrdersPage({
               <TableHead>Дата</TableHead>
               <TableHead>Клиент</TableHead>
               <TableHead>Получение</TableHead>
+              <TableHead>Язык</TableHead>
               <TableHead>Сумма</TableHead>
               <TableHead>Статус</TableHead>
               <TableHead className="text-right">Открыть</TableHead>
@@ -157,8 +160,14 @@ export default async function AdminOrdersPage({
                   {order.customerName}
                   <div className="text-xs text-muted-foreground">{order.phone}</div>
                 </TableCell>
-                <TableCell>{FULFILLMENT_LABELS[order.fulfillment]}</TableCell>
-                <TableCell>{formatMoney(order.total)}</TableCell>
+                <TableCell>
+                  {FULFILLMENT_LABELS[order.fulfillment]}
+                  {order.deliveryZoneName && (
+                    <div className="text-xs text-muted-foreground">{order.deliveryZoneName}</div>
+                  )}
+                </TableCell>
+                <TableCell>{isLocale(order.locale) ? LOCALE_SHORT[order.locale] : order.locale}</TableCell>
+                <TableCell>{formatMoney(order.total, "admin")}</TableCell>
                 <TableCell>
                   <Badge variant="outline" className={ORDER_STATUS_COLORS[order.status]}>
                     {ORDER_STATUS_LABELS[order.status]}
@@ -173,7 +182,7 @@ export default async function AdminOrdersPage({
             ))}
             {filtered.length === 0 && (
               <TableRow>
-                <TableCell colSpan={7} className="py-8 text-center text-muted-foreground">
+                <TableCell colSpan={8} className="py-8 text-center text-muted-foreground">
                   Заказы не найдены
                 </TableCell>
               </TableRow>

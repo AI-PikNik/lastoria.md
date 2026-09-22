@@ -1,0 +1,377 @@
+{
+  "meta": {
+    "subtitle": "Pizzeria tradizionale italiana",
+    "tagline": "La vera pizza nasce da una grande storia.",
+    "defaultTitle": "La Storia — pizzerie italiană tradițională în Chișinău",
+    "defaultDescription": "Pizza coaptă în cuptor, băuturi și deserturi cu livrare în Chișinău sau ridicare personală. Comandă online în câteva minute.",
+    "city": "Chișinău"
+  },
+  "common": {
+    "currency": "MDL",
+    "loading": "Se încarcă…",
+    "close": "Închide",
+    "skipToContent": "Treci la conținut"
+  },
+  "nav": {
+    "home": "Acasă",
+    "menu": "Meniu",
+    "delivery": "Livrare",
+    "about": "Despre noi",
+    "contacts": "Contacte",
+    "cart": "Coș",
+    "openMenu": "Deschide meniul",
+    "closeMenu": "Închide meniul",
+    "language": "Limba",
+    "mainNav": "Navigare principală",
+    "breadcrumbs": "Navigare"
+  },
+  "header": {
+    "call": "Sună-ne",
+    "cartLabel": "Coș, produse: {count}",
+    "cart": "Coș"
+  },
+  "footer": {
+    "about": "Pizzerie italiană în Chișinău. Pizza, băuturi și deserturi cu livrare sau ridicare personală.",
+    "info": "Informații",
+    "hours": "Program",
+    "address": "Adresă",
+    "phone": "Telefon",
+    "rights": "Toate drepturile rezervate.",
+    "links": {
+      "about": "Despre noi",
+      "delivery": "Livrare și plată",
+      "contacts": "Contacte",
+      "agePolicy": "Alcool 18+",
+      "privacy": "Politica de confidențialitate",
+      "terms": "Termeni și condiții",
+      "cookies": "Politica cookie"
+    }
+  },
+  "home": {
+    "heroCta": "Vezi meniul",
+    "heroSecondary": "Condiții de livrare",
+    "heroImageAlt": "Afișul La Storia: familie la cuptorul cu lemne, pizza Margherita pe lopată",
+    "hitsTitle": "Cele mai iubite",
+    "allMenu": "Tot meniul",
+    "promosTitle": "Oferte speciale",
+    "storyTitle": "Povestea La Storia",
+    "story": {
+      "p1": "Pizza adevărată începe cu răbdare: aluatul are nevoie de timp, focul nu se grăbește, iar ingredientele simple spun cel mai mult.",
+      "p2": "De aceea La Storia gătește după tradiția italiană — sos de roșii, mozzarella, busuioc și ulei de măsline, coapte până la marginea rumenă.",
+      "p3": "Comandă online, iar operatorul te sună pentru a confirma comanda."
+    },
+    "deliveryTitle": "Livrare",
+    "deliveryText": "Livrăm în sectoarele Chișinăului. Comanda minimă — {min}.",
+    "pickupTitle": "Ridicare personală",
+    "pickupText": "Ridică comanda singur — fără taxă de livrare.",
+    "paymentTitle": "Plată",
+    "paymentText": "Numerar sau card la curier / la casă.",
+    "factsTitle": "Pe scurt",
+    "shortAnswerTitle": "Răspuns scurt",
+    "shortAnswer": "{brand} este o pizzerie italiană din {city}. Vindem pizza, băuturi răcoritoare, alcool (doar 18+) și gustări. Comenzile se fac online pe site; operatorul sună pentru confirmare. Livrăm în sectoarele orașului sau poți ridica personal. Program: {hours}. Comanda minimă: {min}. Prețurile sunt în MDL, plata — numerar sau card la primire.",
+    "heroTitle": "Pizza italiană tradițională în Chișinău",
+    "groupsTitle": "Ce gătim",
+    "groupsSubtitle": "Alege o grupă din meniu",
+    "hitsSubtitle": "Alegerea oaspeților noștri",
+    "promosSubtitle": "Prețuri speciale chiar acum",
+    "storySubtitle": "Pizza, Pasta, Amore, Sempre"
+  },
+  "facts": {
+    "hours": "Program",
+    "minOrder": "Comanda minimă",
+    "fulfillment": "Livrare și ridicare",
+    "fulfillmentValue": "Livrare prin oraș și ridicare personală",
+    "currency": "Monedă",
+    "alcohol": "Alcool",
+    "alcoholValue": "Doar pentru persoane de 18+",
+    "phone": "Telefon"
+  },
+  "menu": {
+    "title": "Meniu",
+    "description": "Meniul {brand}: pizza, băuturi, alcool și gustări. Comandă online cu livrare sau ridicare personală.",
+    "groupDescription": "{group} în meniul {brand}. Comandă online cu livrare în Chișinău.",
+    "all": "Tot meniul",
+    "groups": "Grupe de produse",
+    "filters": "Filtre",
+    "apply": "Aplică",
+    "reset": "Resetează",
+    "onlyPromo": "Doar oferte",
+    "spicy": "Picant",
+    "vegetarian": "Vegetarian",
+    "alcohol": "Alcool 18+",
+    "priceFrom": "de la",
+    "priceTo": "până la",
+    "price": "Preț, MDL",
+    "minPrice": "Preț minim",
+    "maxPrice": "Preț maxim",
+    "empty": "Nu am găsit produse după aceste filtre. Încearcă alte condiții.",
+    "showResults": "Arată rezultatele",
+    "subtitle": "Pizza, băuturi și multe altele"
+  },
+  "badges": {
+    "hit": "Hit",
+    "promo": "Ofertă",
+    "age18": "18+",
+    "spicy": "Picant",
+    "vegetarian": "Veg"
+  },
+  "product": {
+    "addToCart": "În coș",
+    "addToCartFull": "Adaugă în coș",
+    "added": "„{name}” a fost adăugat în coș",
+    "variant": "Variantă",
+    "quantity": "Cantitate",
+    "decrease": "Micșorează cantitatea",
+    "increase": "Mărește cantitatea",
+    "ingredients": "Ingrediente",
+    "description": "Descriere",
+    "shortAnswerTitle": "Pe scurt",
+    "shortAnswer": "{name} — {category} din meniul {brand} ({city}), la prețul de {price}. {extra}Se poate comanda online pe site cu livrare prin oraș sau ridicare personală; operatorul sună pentru confirmarea comenzii.",
+    "shortAnswerAlcohol": "Produs cu alcool — se vinde doar persoanelor de 18+. ",
+    "notFound": "Produsul nu a fost găsit",
+    "choose": "Alege",
+    "related": "Poate îți place și"
+  },
+  "cart": {
+    "title": "Coș",
+    "empty": "Coșul este gol",
+    "emptyText": "Aruncă o privire în meniu și alege ceva gustos.",
+    "toMenu": "Spre meniu",
+    "remove": "Șterge „{name}” din coș",
+    "items": "Produse",
+    "discount": "Reducere",
+    "promo": "Ofertă „{name}”",
+    "total": "De plată",
+    "deliveryNote": "Livrarea se calculează la plasarea comenzii",
+    "checkout": "Plasează comanda",
+    "removedWarning": "Unele produse au fost scoase din coș: nu mai sunt disponibile",
+    "sticky": "Coș · {count} prod. · {total}",
+    "stickyCount": "{count, plural, one {# produs} few {# produse} other {# de produse}}",
+    "promoCode": "Cod promoțional",
+    "applyCode": "Aplică",
+    "codeInvalid": "Codul nu este valabil sau a expirat",
+    "belowMin": "Comanda minimă — {amount}. Adaugă încă ceva din meniu."
+  },
+  "checkout": {
+    "title": "Plasarea comenzii",
+    "contact": "Date de contact",
+    "name": "Nume",
+    "phone": "Telefon",
+    "phoneHint": "Format: +373 6X XXX XXX sau 0XX XXX XXX",
+    "email": "Email (opțional)",
+    "fulfillment": "Mod de primire",
+    "delivery": "Livrare",
+    "pickup": "Ridicare personală",
+    "city": "Oraș",
+    "zone": "Sector / zonă",
+    "chooseZone": "Alege zona",
+    "address": "Adresa de livrare",
+    "addressPlaceholder": "Stradă, bloc, apartament, scară, etaj",
+    "pickupAt": "Ridicare de la: {address}",
+    "payment": "Metoda de plată",
+    "cash": "Numerar",
+    "cardOnDelivery": "Card la primire",
+    "comment": "Comentariu la comandă",
+    "summary": "Comanda ta",
+    "items": "Produse",
+    "deliveryFee": "Livrare",
+    "free": "gratuit",
+    "freeFrom": "gratuit de la {amount}",
+    "total": "Total",
+    "minOrder": "Comanda minimă — {amount}",
+    "ageConfirm": "Confirm că am împlinit 18 ani",
+    "ageConfirmHint": "Coșul conține produse cu alcool. Curierul poate solicita un act de identitate.",
+    "submit": "Confirmă comanda",
+    "submitting": "Se trimite…",
+    "success": "Comanda a fost primită! Așteaptă apelul operatorului",
+    "noZones": "Livrarea nu este disponibilă momentan — alege ridicarea personală."
+  },
+  "validation": {
+    "nameRequired": "Indică numele",
+    "phoneInvalid": "Număr invalid. Folosește +373XXXXXXXX sau 0XXXXXXXX (Moldova sau Transnistria)",
+    "emailInvalid": "Email invalid",
+    "addressRequired": "Indică adresa de livrare",
+    "zoneRequired": "Alege zona de livrare",
+    "cartEmpty": "Coșul este gol",
+    "ageRequired": "Pentru produsele cu alcool confirmă că ai 18 ani",
+    "minOrder": "Comanda minimă — {amount}",
+    "tooMany": "Prea multe încercări. Încearcă puțin mai târziu.",
+    "unavailable": "Produsele din coș nu mai sunt disponibile. Actualizează coșul.",
+    "checkForm": "Verifică datele din formular",
+    "generic": "A apărut o eroare. Încearcă din nou."
+  },
+  "order": {
+    "title": "Comanda nr. {number}",
+    "created": "Plasată pe {date}",
+    "pendingNote": "Comanda ta așteaptă confirmarea operatorului. Te vom suna în curând la numărul indicat.",
+    "items": "Componența comenzii",
+    "details": "Detalii",
+    "fulfillment": "Mod de primire",
+    "address": "Adresă",
+    "zone": "Zonă",
+    "payment": "Plată",
+    "phone": "Telefon",
+    "history": "Istoric",
+    "subtotal": "Produse",
+    "discount": "Reducere",
+    "delivery": "Livrare",
+    "total": "Total",
+    "status": {
+      "PENDING_CONFIRMATION": "Așteaptă confirmarea",
+      "CONFIRMED": "Confirmată",
+      "PREPARING": "Se pregătește",
+      "OUT_FOR_DELIVERY": "În drum",
+      "READY_FOR_PICKUP": "Gata de ridicare",
+      "COMPLETED": "Finalizată",
+      "CANCELLED": "Anulată"
+    },
+    "pageTitle": "Starea comenzii"
+  },
+  "ageGate": {
+    "title": "Confirmarea vârstei 18+",
+    "text": "Această secțiune conține produse cu alcool. Vânzarea alcoolului persoanelor sub 18 ani este interzisă. Confirmă că ai împlinit 18 ani.",
+    "confirm": "Am 18 ani",
+    "decline": "Nu am 18 ani",
+    "pending": "Este necesară confirmarea vârstei…"
+  },
+  "cookies": {
+    "title": "Cookie-uri",
+    "text": "Folosim cookie-uri necesare (limbă, coș, sesiune). Cele analitice — doar cu acordul tău.",
+    "accept": "Accept",
+    "necessary": "Doar necesare",
+    "learnMore": "Detalii",
+    "current": "Alegerea curentă",
+    "stateAll": "toate cookie-urile",
+    "stateNecessary": "doar cele necesare",
+    "stateNone": "nu a fost făcută"
+  },
+  "lang": {
+    "label": "Limba"
+  },
+  "errors": {
+    "notFoundTitle": "Pagina nu a fost găsită",
+    "notFoundText": "Poate a fost mutată sau nu a existat niciodată.",
+    "backHome": "Pe pagina principală",
+    "errorTitle": "Ceva nu a mers bine",
+    "errorText": "Încearcă să reîncarci pagina.",
+    "retry": "Reîncearcă",
+    "toMenu": "Vezi meniul"
+  },
+  "email": {
+    "receivedSubject": "Comanda nr. {number} a fost primită",
+    "receivedIntro": "Mulțumim! Comanda ta a fost primită și așteaptă confirmarea operatorului.",
+    "statusSubject": "Comanda nr. {number}: {status}",
+    "statusIntro": "Statusul comenzii tale s-a schimbat: {status}",
+    "number": "Comanda nr. {number}",
+    "status": "Status: {status}",
+    "total": "Total: {total}",
+    "track": "Urmărește comanda: {url}"
+  },
+  "pages": {
+    "about": {
+      "title": "Despre noi",
+      "description": "La Storia — pizzerie italiană tradițională în Chișinău. Cum gătim și cum poți comanda.",
+      "h1": "Despre La Storia",
+      "body": {
+        "p1": "La Storia este o pizzerie în stil italian tradițional. Meniul are pizza, băuturi răcoritoare, alcool pentru adulți, gustări, sosuri și deserturi.",
+        "p2": "Comenzile se fac online pe site: alegi produsele, plasezi comanda, iar operatorul te sună pentru confirmare. Poți alege livrarea prin oraș sau ridicarea personală."
+      },
+      "faqTitle": "Întrebări frecvente"
+    },
+    "delivery": {
+      "title": "Livrare și plată",
+      "description": "Zonele și prețurile de livrare în Chișinău, comanda minimă, ridicarea personală și metodele de plată La Storia.",
+      "h1": "Livrare și plată",
+      "zonesTitle": "Zone de livrare",
+      "zoneCol": "Zonă",
+      "feeCol": "Cost",
+      "minOrder": "Comanda minimă: {amount}.",
+      "hours": "Program: {hours}.",
+      "paymentTitle": "Metode de plată",
+      "paymentText": "Numerar sau card curierului / la casă la primire. Plata online cu cardul nu este disponibilă.",
+      "pickupTitle": "Ridicare personală",
+      "pickupText": "Ridică comanda de la adresa: {address}.",
+      "faqTitle": "Întrebări frecvente"
+    },
+    "contacts": {
+      "title": "Contacte",
+      "description": "Contactele pizzeriei La Storia din Chișinău: adresă, telefon, program.",
+      "h1": "Contacte",
+      "phone": "Telefon",
+      "email": "Email",
+      "address": "Adresă",
+      "hours": "Program"
+    },
+    "privacy": {
+      "title": "Politica de confidențialitate",
+      "description": "Cum prelucrează La Storia datele personale ale clienților.",
+      "h1": "Politica de confidențialitate",
+      "body": {
+        "p1": "La plasarea comenzii colectăm numele, telefonul, adresa de livrare și, opțional, emailul. Aceste date sunt folosite doar pentru procesarea comenzii și comunicarea cu tine.",
+        "p2": "Nu transmitem datele terților, cu excepția cazurilor necesare pentru livrarea comenzii.",
+        "p3": "Site-ul folosește cookie-uri necesare pentru limbă, coș și sesiune. Cookie-urile analitice se activează doar cu acordul tău — vezi Politica cookie.",
+        "p4": "Poți solicita ștergerea datelor tale personale folosind datele de pe pagina Contacte."
+      }
+    },
+    "terms": {
+      "title": "Termeni și condiții",
+      "description": "Condițiile de plasare și executare a comenzilor pe site-ul La Storia.",
+      "h1": "Termeni și condiții",
+      "body": {
+        "p1": "Comanda se consideră acceptată după confirmarea operatorului prin telefon.",
+        "p2": "Prețurile sunt indicate în lei moldovenești (MDL) și pot include reduceri conform ofertelor active. Plata se face numerar sau cu cardul la primire.",
+        "p3": "Produsele cu alcool se vând doar persoanelor de 18+, conform legislației Republicii Moldova."
+      }
+    },
+    "agePolicy": {
+      "title": "Alcool 18+",
+      "description": "Condițiile de vânzare a produselor cu alcool pe site-ul La Storia — doar pentru persoane de 18+.",
+      "h1": "Vânzarea alcoolului 18+",
+      "body": {
+        "p1": "Secțiunea „Alcool” este disponibilă doar persoanelor care au împlinit 18 ani. Înainte de a deschide un produs cu alcool sau de a-l adăuga în coș, ți se va cere să confirmi vârsta.",
+        "p2": "Plasând o comandă cu alcool, confirmi că ai 18 ani. Curierul are dreptul să solicite un act de identitate."
+      }
+    },
+    "cookies": {
+      "title": "Politica cookie",
+      "description": "Ce cookie-uri folosește site-ul La Storia și cum îți poți gestiona acordul.",
+      "h1": "Politica cookie",
+      "body": {
+        "p1": "Cookie-uri necesare (mereu active): NEXT_LOCALE — limba aleasă; coșul este păstrat în memoria locală a browserului; sesiunea de administrator — doar pentru personal; ls_consent — alegerea ta privind cookie-urile.",
+        "p2": "Cookie-uri analitice (doar cu acord): statistici anonime de vizitare, dacă sunt activate de administrator.",
+        "p3": "Poți schimba alegerea oricând cu butoanele de mai jos. Dacă ștergi cookie-urile site-ului din browser, bannerul va apărea din nou."
+      },
+      "reset": "Schimbă alegerea"
+    },
+    "faq": {
+      "q1": {
+        "q": "Cum pot face o comandă?",
+        "a": "Adaugă produsele în coș și plasează comanda pe site. Operatorul te va suna pentru confirmare."
+      },
+      "q2": {
+        "q": "Livrați la domiciliu?",
+        "a": "Da, în zonele indicate pe pagina Livrare. Costul depinde de zonă."
+      },
+      "q3": {
+        "q": "Care este comanda minimă?",
+        "a": "Comanda minimă este {min}."
+      },
+      "q4": {
+        "q": "Cum pot plăti?",
+        "a": "Numerar sau cu cardul la primire. Plata online nu este disponibilă."
+      },
+      "q5": {
+        "q": "Pot ridica comanda personal?",
+        "a": "Da, de la adresa: {address}."
+      },
+      "q6": {
+        "q": "Vindeți alcool?",
+        "a": "Da, doar persoanelor de 18+. Curierul poate cere un act de identitate."
+      },
+      "q7": {
+        "q": "Care este programul?",
+        "a": "{hours}."
+      }
+    }
+  }
+}

@@ -1,88 +1,18 @@
 @import "tailwindcss";
-
-:root {
-  --radius: 0.65rem;
-
-  /* Тёплая пиццерия: крем, томатный красный, уголь */
-  --background: #fdf6ec;
-  --foreground: #2a1e16;
-
-  --card: #ffffff;
-  --card-foreground: #2a1e16;
-
-  --popover: #ffffff;
-  --popover-foreground: #2a1e16;
-
-  --primary: #c8391f;
-  --primary-foreground: #fff8f0;
-
-  --secondary: #f3e4c9;
-  --secondary-foreground: #2a1e16;
-
-  --muted: #f1e6d6;
-  --muted-foreground: #6b5849;
-
-  --accent: #e8a13a;
-  --accent-foreground: #2a1e16;
-
-  --destructive: #b3261e;
-  --destructive-foreground: #fff8f0;
-
-  --success: #3c7a3f;
-  --success-foreground: #ffffff;
-
-  --border: #e5d5bd;
-  --input: #e5d5bd;
-  --ring: #c8391f;
-
-  --charcoal: #221812;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #1a130e;
-    --foreground: #f3e9dc;
-
-    --card: #241a13;
-    --card-foreground: #f3e9dc;
-
-    --popover: #241a13;
-    --popover-foreground: #f3e9dc;
-
-    --primary: #e0532f;
-    --primary-foreground: #fff8f0;
-
-    --secondary: #34261b;
-    --secondary-foreground: #f3e9dc;
-
-    --muted: #2c2018;
-    --muted-foreground: #c2ac95;
-
-    --accent: #e8a13a;
-    --accent-foreground: #1a130e;
-
-    --destructive: #e0433a;
-    --destructive-foreground: #fff8f0;
-
-    --success: #5aa860;
-    --success-foreground: #0f1a0f;
-
-    --border: #3a2c20;
-    --input: #3a2c20;
-    --ring: #e0532f;
-
-    --charcoal: #100b08;
-  }
-}
+/* Тема сайта: цвета и декор редактируются в папке theme/, а не здесь */
+@import "../theme/tokens.css";
+@import "../theme/decor.css";
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
@@ -90,21 +20,45 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-highlight: var(--highlight);
+  --color-highlight-foreground: var(--highlight-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
   --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --color-charcoal: var(--charcoal);
+
+  /* Сырые цвета постера — для декора */
+  --color-wine: var(--c-wine);
+  --color-olive: var(--c-olive);
+  --color-terracotta: var(--c-terracotta);
+  --color-brick: var(--c-brick);
+  --color-charcoal: var(--c-charcoal);
+  --color-fire: var(--c-fire);
+  --color-fire-light: var(--c-fire-light);
+  --color-gold: var(--c-gold);
+  --color-gold-soft: var(--c-gold-soft);
+  --color-cream: var(--c-cream);
+  --color-parchment: var(--c-parchment);
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 
-  --font-sans: var(--font-sans-family);
+  --shadow-card: var(--elev-card);
+  --shadow-lift: var(--elev-lift);
+
+  --font-sans: var(--ff-body), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--ff-display), Georgia, "Times New Roman", serif;
+  --font-accent: var(--ff-accent), Georgia, serif;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -116,7 +70,36 @@ body {
   border-color: var(--border);
 }
 
-.badge-18 {
-  background: var(--charcoal);
-  color: #fff;
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@keyframes sheet-in-right {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+@keyframes sheet-in-left {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+@keyframes sheet-in-bottom {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
 }

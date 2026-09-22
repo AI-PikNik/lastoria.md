@@ -1,107 +1,107 @@
 "use client";
 
 import * as React from "react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { useCart } from "@/components/cart/cart-context";
-import { useAgeGate } from "@/components/age-gate/age-gate-context";
-import { formatMoney } from "@/lib/format";
+import { useTranslations } from "next-intl";
 import { Minus, Plus } from "lucide-react";
-
-export interface VariantOption {
-  name: string;
-  priceDelta: number;
-}
+import type { AppLocale } from "@/lib/i18n/locales";
+import type { PricedVariant } from "@/lib/catalog";
+import { cn } from "@/lib/utils";
+import { AddToCartButton } from "./add-to-cart-button";
+import { Price } from "./price";
 
 interface ProductPurchasePanelProps {
   productId: string;
   name: string;
-  basePrice: number;
-  isAlcohol: boolean;
-  variants: VariantOption[];
+  price: number;
+  oldPrice: number | null;
+  ageRestricted: boolean;
+  variants: PricedVariant[];
+  locale: AppLocale;
 }
 
 export function ProductPurchasePanel({
   productId,
   name,
-  basePrice,
-  isAlcohol,
+  price,
+  oldPrice,
+  ageRestricted,
   variants,
+  locale,
 }: ProductPurchasePanelProps) {
-  const { addItem } = useCart();
-  const { requestConfirmation } = useAgeGate();
-  const [variant, setVariant] = React.useState<string | null>(
-    variants.length > 0 ? variants[0].name : null
-  );
+  const t = useTranslations("product");
+  const [variantKey, setVariantKey] = React.useState<string | null>(variants[0]?.key ?? null);
   const [qty, setQty] = React.useState(1);
-
-  const selectedVariant = variants.find((v) => v.name === variant);
-  const unitPrice = basePrice + (selectedVariant?.priceDelta ?? 0);
-
-  const handleAdd = async () => {
-    if (isAlcohol) {
-      const ok = await requestConfirmation();
-      if (!ok) return;
-    }
-    addItem({ productId, variantName: variant, qty });
-    toast.success(`${name} добавлен в корзину`);
-  };
+  const variant = variants.find((v) => v.key === variantKey);
+  const unitPrice = variant ? variant.price : price;
+  const unitOld = variant ? variant.oldPrice : oldPrice;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="space-y-5">
+      <Price price={unitPrice} oldPrice={unitOld} locale={locale} size="lg" />
+
       {variants.length > 0 && (
-        <div>
-          <p className="mb-2 text-sm font-medium">Вариант</p>
-          <div className="flex flex-wrap gap-2">
-            {variants.map((v) => (
-              <button
-                key={v.name}
-                type="button"
-                onClick={() => setVariant(v.name)}
-                className={`rounded-md border px-3 py-1.5 text-sm ${
-                  variant === v.name
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-input bg-card hover:bg-secondary"
-                }`}
-              >
-                {v.name}
-                {v.priceDelta !== 0 && ` (+${formatMoney(v.priceDelta)})`}
-              </button>
-            ))}
+        <fieldset>
+          <legend className="mb-2 text-sm font-semibold">{t("variant")}</legend>
+          <div className="flex flex-wrap gap-2" role="radiogroup">
+            {variants.map((v) => {
+              const selected = v.key === variantKey;
+              return (
+                <button
+                  key={v.key}
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
+                  onClick={() => setVariantKey(v.key)}
+                  className={cn(
+                    "min-h-11 rounded-lg border px-4 py-2 text-left text-sm font-semibold transition-colors",
+                    selected
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border-strong bg-card hover:bg-surface"
+                  )}
+                >
+                  {v.name}
+                </button>
+              );
+            })}
           </div>
-        </div>
+        </fieldset>
       )}
 
-      <div className="flex items-center gap-4">
-        <div className="flex items-center rounded-md border border-input">
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex items-center rounded-lg border border-border-strong bg-card" aria-label={t("quantity")} role="group">
           <button
             type="button"
-            aria-label="Уменьшить количество"
-            className="flex h-10 w-10 items-center justify-center hover:bg-secondary"
+            className="flex size-11 items-center justify-center rounded-l-lg hover:bg-surface disabled:opacity-40"
             onClick={() => setQty((q) => Math.max(1, q - 1))}
+            disabled={qty <= 1}
+            aria-label={t("decrease")}
           >
-            <Minus className="h-4 w-4" />
+            <Minus className="size-4" aria-hidden="true" />
           </button>
-          <span className="w-8 text-center text-sm font-medium" aria-live="polite">
+          <output className="w-10 text-center font-semibold" aria-live="polite">
             {qty}
-          </span>
+          </output>
           <button
             type="button"
-            aria-label="Увеличить количество"
-            className="flex h-10 w-10 items-center justify-center hover:bg-secondary"
+            className="flex size-11 items-center justify-center rounded-r-lg hover:bg-surface disabled:opacity-40"
             onClick={() => setQty((q) => Math.min(50, q + 1))}
+            disabled={qty >= 50}
+            aria-label={t("increase")}
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="size-4" aria-hidden="true" />
           </button>
         </div>
-        <span className="text-2xl font-semibold text-primary">
-          {formatMoney(unitPrice * qty)}
-        </span>
+        <AddToCartButton
+          productId={productId}
+          name={variant ? `${name} (${variant.name})` : name}
+          ageRestricted={ageRestricted}
+          variantKey={variantKey}
+          qty={qty}
+          size="lg"
+          label="full"
+          className="flex-1 sm:flex-none"
+        />
       </div>
-
-      <Button size="lg" onClick={handleAdd}>
-        Добавить в корзину
-      </Button>
     </div>
   );
 }

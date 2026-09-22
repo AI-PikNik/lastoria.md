@@ -71,7 +71,7 @@ export default async function AdminPromosPage() {
                     {TYPE_LABELS[promo.type]} / {SCOPE_LABELS[promo.scope]}
                   </TableCell>
                   <TableCell>
-                    {promo.type === "PERCENT" ? `${promo.value}%` : formatMoney(promo.value)}
+                    {promo.type === "PERCENT" ? `${promo.value}%` : formatMoney(promo.value, "admin")}
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground">
                     {formatDate(promo.startsAt)} — {formatDate(promo.endsAt)}

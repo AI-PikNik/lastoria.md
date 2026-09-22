@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { PRODUCT_TYPE_LABELS } from "@/lib/constants";
+import { CATEGORY_KIND_LABELS } from "@/lib/constants";
 
 interface Category {
   id: string;
@@ -95,19 +95,19 @@ export function OrdersFilterBar({
       </Select>
 
       <Select value={productType} onValueChange={setProductType}>
-        <SelectTrigger><SelectValue placeholder="Тип товара" /></SelectTrigger>
+        <SelectTrigger><SelectValue placeholder="Тип группы" /></SelectTrigger>
         <SelectContent>
-          <SelectItem value={ALL}>Все типы</SelectItem>
-          {Object.entries(PRODUCT_TYPE_LABELS).map(([value, label]) => (
+          <SelectItem value={ALL}>Все типы групп</SelectItem>
+          {Object.entries(CATEGORY_KIND_LABELS).map(([value, label]) => (
             <SelectItem key={value} value={value}>{label}</SelectItem>
           ))}
         </SelectContent>
       </Select>
 
       <Select value={categoryId} onValueChange={setCategoryId}>
-        <SelectTrigger><SelectValue placeholder="Категория" /></SelectTrigger>
+        <SelectTrigger><SelectValue placeholder="Группа" /></SelectTrigger>
         <SelectContent>
-          <SelectItem value={ALL}>Все категории</SelectItem>
+          <SelectItem value={ALL}>Все группы</SelectItem>
           {categories.map((c) => (
             <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
           ))}

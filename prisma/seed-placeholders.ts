@@ -1,7 +1,8 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 
-const PALETTE = ["#c8391f", "#e8a13a", "#8a3b1f", "#3c7a3f", "#c8391f"];
+// Палитра постера: винный, терракота, оливковый, кирпичный, огонь
+const PALETTE = ["#7a1f1f", "#b85a32", "#4e6b3a", "#8c3b22", "#e08a2a"];
 
 function pick<T>(arr: T[], seed: number): T {
   return arr[seed % arr.length];
@@ -26,12 +27,13 @@ function buildSvg(label: string, seed: number): string {
       </linearGradient>
     </defs>
     <rect width="800" height="800" fill="url(#g)" />
-    <circle cx="400" cy="330" r="180" fill="#fdf6ec" opacity="0.12" />
-    <circle cx="400" cy="330" r="120" fill="#fdf6ec" opacity="0.16" />
-    <text x="400" y="620" text-anchor="middle" font-family="Georgia, serif" font-size="46" fill="#fdf6ec" font-weight="600">${escapeXml(
+    <rect x="24" y="24" width="752" height="752" fill="none" stroke="#c7a15a" stroke-width="4" opacity="0.8" />
+    <circle cx="400" cy="330" r="180" fill="#f6ebd8" opacity="0.14" />
+    <circle cx="400" cy="330" r="120" fill="#f6ebd8" opacity="0.18" />
+    <text x="400" y="620" text-anchor="middle" font-family="Georgia, serif" font-size="46" fill="#fff8ee" font-weight="700" font-style="italic">${escapeXml(
       label
     )}</text>
-    <text x="400" y="670" text-anchor="middle" font-family="Georgia, serif" font-size="28" fill="#fdf6ec" opacity="0.85">La Storia</text>
+    <text x="400" y="670" text-anchor="middle" font-family="Georgia, serif" font-size="28" fill="#f2c14e" opacity="0.95" font-style="italic">La Storia</text>
   </svg>`;
 }
 

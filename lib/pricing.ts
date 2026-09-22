@@ -1,4 +1,5 @@
-export type ProductTypeValue = "PIZZA" | "DRINK" | "ALCOHOL" | "OTHER";
+/** Тип группы товаров (CategoryKind) — по нему работают промо со scope PRODUCT_TYPE */
+export type CategoryKindValue = "PIZZA" | "DRINK" | "ALCOHOL" | "OTHER" | "CUSTOM";
 export type PromoTypeValue = "PERCENT" | "FIXED" | "PRODUCT_OVERRIDE";
 export type PromoScopeValue = "PRODUCT" | "CATEGORY" | "PRODUCT_TYPE" | "CART";
 
@@ -7,7 +8,7 @@ export interface CartPricingItemInput {
   id: string;
   productId: string;
   categoryId: string;
-  type: ProductTypeValue;
+  kind: CategoryKindValue;
   unitPrice: number;
   qty: number;
 }
@@ -15,6 +16,7 @@ export interface CartPricingItemInput {
 export interface CartPricingPromoInput {
   id: string;
   name: string;
+  publicNames?: Record<string, string>;
   code?: string | null;
   type: PromoTypeValue;
   value: number;
@@ -35,7 +37,10 @@ export interface CartPricingItemResult extends CartPricingItemInput {
 
 export interface AppliedPromoSnapshot {
   id: string;
+  /** Внутреннее название (для админки) */
   name: string;
+  /** Публичные названия { ro, ru, en, it } */
+  publicNames?: Record<string, string>;
   code?: string | null;
   type: PromoTypeValue;
   scope: PromoScopeValue;
@@ -73,7 +78,7 @@ function matchesScope(
     case "CATEGORY":
       return promo.targetIds.includes(item.categoryId);
     case "PRODUCT_TYPE":
-      return promo.targetIds.includes(item.type);
+      return promo.targetIds.includes(item.kind);
     default:
       return false;
   }
@@ -198,6 +203,7 @@ export function calculateCartPricing(
   const appliedPromos: AppliedPromoSnapshot[] = appliedQuotes.map((quote) => ({
     id: quote.promo.id,
     name: quote.promo.name,
+    publicNames: quote.promo.publicNames ?? {},
     code: quote.promo.code ?? null,
     type: quote.promo.type,
     scope: quote.promo.scope,

@@ -1,83 +1,71 @@
 import { Plus } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { LOCALES, type AppLocale } from "@/lib/i18n/locales";
+import { missingLocales } from "@/lib/i18n/translate";
+import { adminName } from "@/lib/admin-data";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { CategoryFormDialog } from "@/components/admin/category-form-dialog";
-import { DeleteButton } from "@/components/admin/delete-button";
-import { deleteCategory } from "@/lib/actions/categories";
+import { CategoryEditor } from "@/components/admin/category-editor";
+import { CategoryList, type CategoryRow } from "@/components/admin/category-list";
+
+export const metadata = { title: "Группы товаров" };
 
 export default async function AdminCategoriesPage() {
-  const categories = await prisma.category.findMany({
-    orderBy: { sortOrder: "asc" },
-    include: { _count: { select: { products: true } } },
+  const rows = await prisma.category.findMany({
+    orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+    include: { translations: true, _count: { select: { products: true } } },
+  });
+
+  const categories: CategoryRow[] = rows.map((c) => {
+    const byLocale = new Map(c.translations.map((t) => [t.locale as AppLocale, t]));
+    return {
+      id: c.id,
+      slug: c.slug,
+      kind: c.kind,
+      isActive: c.isActive,
+      isSystem: c.isSystem,
+      requiresAgeConfirm: c.requiresAgeConfirm,
+      imageUrl: c.imageUrl,
+      name: adminName(c.translations, c.slug),
+      productCount: c._count.products,
+      missing: missingLocales(c.translations, "name"),
+      translations: Object.fromEntries(
+        LOCALES.map((l) => {
+          const t = byLocale.get(l);
+          return [
+            l,
+            {
+              name: t?.name ?? "",
+              description: t?.description ?? "",
+              seoTitle: t?.seoTitle ?? "",
+              seoDescription: t?.seoDescription ?? "",
+            },
+          ];
+        })
+      ) as CategoryRow["translations"],
+    };
   });
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="font-display text-2xl font-bold">Категории</h1>
-        <CategoryFormDialog
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="font-display text-2xl font-bold">Группы товаров</h1>
+          <p className="text-sm text-muted-foreground">
+            Порядок здесь = порядок на сайте. Перетащите строку или используйте стрелки.
+          </p>
+        </div>
+        <CategoryEditor
           trigger={
             <Button>
-              <Plus className="h-4 w-4" /> Новая категория
+              <Plus /> Новая группа
             </Button>
           }
         />
       </div>
-
-      <div className="rounded-xl border border-border bg-card">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Название</TableHead>
-              <TableHead>Slug</TableHead>
-              <TableHead>Товаров</TableHead>
-              <TableHead>Порядок</TableHead>
-              <TableHead>Статус</TableHead>
-              <TableHead className="text-right">Действия</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {categories.map((category) => (
-              <TableRow key={category.id}>
-                <TableCell className="font-medium">{category.name}</TableCell>
-                <TableCell className="text-muted-foreground">{category.slug}</TableCell>
-                <TableCell>{category._count.products}</TableCell>
-                <TableCell>{category.sortOrder}</TableCell>
-                <TableCell>
-                  <Badge variant={category.isActive ? "success" : "outline"}>
-                    {category.isActive ? "Активна" : "Скрыта"}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex justify-end gap-1">
-                    <CategoryFormDialog
-                      category={category}
-                      trigger={
-                        <Button variant="outline" size="sm">
-                          Изменить
-                        </Button>
-                      }
-                    />
-                    <DeleteButton
-                      action={deleteCategory.bind(null, category.id)}
-                      confirmText={`Удалить категорию «${category.name}»?`}
-                    />
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+      <CategoryList categories={categories} />
+      <p className="text-xs text-muted-foreground">
+        Стартовые группы и группы с товарами удалить нельзя — их можно скрыть. Пустую свою группу можно удалить.
+      </p>
     </div>
   );
 }

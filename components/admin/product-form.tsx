@@ -1,431 +1,515 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { X, Plus, Upload } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { createProduct, updateProduct } from "@/lib/actions/products";
+import { CheckCircle2, Circle, ExternalLink, ImagePlus, Loader2, Plus, Star, Trash2, TriangleAlert } from "lucide-react";
+import { createProduct, updateProduct, uploadProductImages } from "@/lib/actions/products";
+import { LOCALES, LOCALE_LABELS, LOCALE_SHORT, localizedPath, type AppLocale } from "@/lib/i18n/locales";
+import { productSeoChecklist } from "@/lib/seo-checklist";
 import { slugify } from "@/lib/slug";
-import { PRODUCT_TYPE_LABELS } from "@/lib/constants";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
+import { MissingBadge } from "./localized-fields";
+import { emptyLocalized, type ProductFormValues, type ProductTranslationForm } from "@/lib/admin-forms";
 
-interface Category {
-  id: string;
-  name: string;
-}
+export type { ProductFormValues } from "@/lib/admin-forms";
 
-interface VariantRow {
-  name: string;
-  priceDelta: number;
-}
+type Tab = "main" | "texts" | "photos" | "variants" | "seo";
 
-interface ProductData {
-  id: string;
-  name: string;
-  slug: string;
-  description: string | null;
-  shortDescription: string | null;
-  categoryId: string;
-  type: string;
-  price: number;
-  oldPrice: number | null;
-  isAlcohol: boolean;
-  isVegetarian: boolean;
-  isSpicy: boolean;
-  isActive: boolean;
-  isFeatured: boolean;
-  sku: string | null;
-  sortOrder: number;
-  stock: number | null;
-  imageUrl: string | null;
-  galleryUrls: string[];
-  ingredients: string[];
-  variants: VariantRow[];
-  seoTitle: string | null;
-  seoDescription: string | null;
-  seoKeywords: string | null;
-}
-
-const PRODUCT_TYPES = Object.entries(PRODUCT_TYPE_LABELS);
+const TABS: { id: Tab; label: string }[] = [
+  { id: "main", label: "Основное" },
+  { id: "texts", label: "Названия и описания" },
+  { id: "photos", label: "Фото" },
+  { id: "variants", label: "Варианты" },
+  { id: "seo", label: "SEO" },
+];
 
 export function ProductForm({
-  product,
+  productId,
+  initial,
   categories,
 }: {
-  product?: ProductData;
-  categories: Category[];
+  productId?: string;
+  initial: ProductFormValues;
+  categories: { id: string; name: string; kind: string }[];
 }) {
   const router = useRouter();
-  const [name, setName] = React.useState(product?.name ?? "");
-  const [slug, setSlug] = React.useState(product?.slug ?? "");
-  const [slugTouched, setSlugTouched] = React.useState(Boolean(product));
-  const [categoryId, setCategoryId] = React.useState(product?.categoryId ?? categories[0]?.id ?? "");
-  const [type, setType] = React.useState(product?.type ?? "PIZZA");
-  const [ingredients, setIngredients] = React.useState(
-    (product?.ingredients ?? []).join(", ")
-  );
-  const [variants, setVariants] = React.useState<VariantRow[]>(product?.variants ?? []);
-  const [mainImageFile, setMainImageFile] = React.useState<File | null>(null);
-  const [mainImagePreview, setMainImagePreview] = React.useState<string | null>(
-    product?.imageUrl ?? null
-  );
-  const [existingGallery, setExistingGallery] = React.useState<string[]>(
-    (product?.galleryUrls ?? []).filter((url) => url !== product?.imageUrl)
-  );
-  const [newGalleryFiles, setNewGalleryFiles] = React.useState<File[]>([]);
+  const [v, setV] = React.useState<ProductFormValues>(initial);
+  const [tab, setTab] = React.useState<Tab>("main");
+  const [lang, setLang] = React.useState<AppLocale>("ro");
   const [errors, setErrors] = React.useState<Record<string, string>>({});
-  const [formError, setFormError] = React.useState<string | null>(null);
   const [pending, setPending] = React.useState(false);
+  const [uploading, setUploading] = React.useState(false);
+  const [dragIndex, setDragIndex] = React.useState<number | null>(null);
+  const fileRef = React.useRef<HTMLInputElement>(null);
 
-  const newGalleryPreviews = React.useMemo(
-    () => newGalleryFiles.map((f) => URL.createObjectURL(f)),
-    [newGalleryFiles]
-  );
+  const set = <K extends keyof ProductFormValues>(key: K, value: ProductFormValues[K]) =>
+    setV((prev) => ({ ...prev, [key]: value }));
+  const setTr = (field: keyof ProductTranslationForm, value: string) =>
+    setV((prev) => ({
+      ...prev,
+      translations: { ...prev.translations, [lang]: { ...prev.translations[lang], [field]: value } },
+    }));
 
-  const addVariant = () => setVariants((v) => [...v, { name: "", priceDelta: 0 }]);
-  const removeVariant = (index: number) =>
-    setVariants((v) => v.filter((_, i) => i !== index));
-  const updateVariant = (index: number, patch: Partial<VariantRow>) =>
-    setVariants((v) => v.map((row, i) => (i === index ? { ...row, ...patch } : row)));
+  const missing = LOCALES.filter((l) => !v.translations[l].name.trim());
+  const selectedCategory = categories.find((c) => c.id === v.categoryId);
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setPending(true);
-    setErrors({});
-    setFormError(null);
-
-    const formData = new FormData(event.currentTarget);
-    formData.set("slug", slug);
-    formData.set("categoryId", categoryId);
-    formData.set("type", type);
-    formData.set(
-      "ingredients",
-      JSON.stringify(
-        ingredients
-          .split(",")
-          .map((s) => s.trim())
-          .filter(Boolean)
-      )
-    );
-    formData.set(
-      "variants",
-      JSON.stringify(variants.filter((v) => v.name.trim().length > 0))
-    );
-    formData.set("existingGalleryUrls", JSON.stringify(existingGallery));
-    formData.set("existingImageUrl", mainImagePreview ?? "");
-    if (mainImageFile) formData.set("mainImage", mainImageFile);
-    formData.delete("galleryImages");
-    for (const file of newGalleryFiles) formData.append("galleryImages", file);
-
-    const result = product
-      ? await updateProduct(product.id, formData)
-      : await createProduct(formData);
-
-    setPending(false);
-
-    if (!result.ok) {
-      setErrors(result.fieldErrors ?? {});
-      setFormError(result.error ?? null);
-      toast.error(result.error ?? "Проверьте форму");
+  /* ── Фото ── */
+  const uploadFiles = async (files: FileList | File[]) => {
+    const list = Array.from(files).filter((f) => f.type.startsWith("image/"));
+    if (list.length === 0) return;
+    setUploading(true);
+    const formData = new FormData();
+    list.forEach((file) => formData.append("files", file));
+    const result = await uploadProductImages(formData);
+    setUploading(false);
+    if (!result.ok || !result.urls) {
+      toast.error(result.error ?? "Не удалось загрузить фото");
       return;
     }
+    setV((prev) => ({ ...prev, images: [...prev.images, ...result.urls!] }));
+    toast.success(`Загружено фото: ${result.urls.length}. Не забудьте сохранить товар.`);
+  };
 
-    toast.success(product ? "Товар обновлён" : "Товар создан");
-    router.push("/admin/products");
+  const moveImage = (from: number, to: number) => {
+    if (from === to || to < 0 || to >= v.images.length) return;
+    const next = [...v.images];
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    set("images", next);
+  };
+
+  /* ── Сохранение ── */
+  const submit = async () => {
+    setPending(true);
+    setErrors({});
+    const payload = {
+      slug: v.slug.trim(),
+      categoryId: v.categoryId,
+      price: v.price,
+      oldPrice: v.oldPrice ? v.oldPrice : null,
+      isAlcohol: v.isAlcohol,
+      isVegetarian: v.isVegetarian,
+      isSpicy: v.isSpicy,
+      isActive: v.isActive,
+      isFeatured: v.isFeatured,
+      sku: v.sku,
+      sortOrder: v.sortOrder || 0,
+      stock: v.stock ? v.stock : null,
+      images: v.images,
+      ogImageUrl: v.ogImageUrl,
+      variants: v.variants.map((variant) => ({ ...variant, priceDelta: variant.priceDelta || 0 })),
+      translations: v.translations,
+    };
+    const result = productId ? await updateProduct(productId, payload) : await createProduct(payload);
+    setPending(false);
+    if (!result.ok) {
+      const fieldErrors = result.fieldErrors ?? {};
+      setErrors(fieldErrors);
+      const first = Object.keys(fieldErrors)[0] ?? "";
+      if (first.startsWith("translations")) setTab("texts");
+      else if (first.startsWith("variants")) setTab("variants");
+      else if (first) setTab("main");
+      toast.error(result.error ?? Object.values(fieldErrors)[0] ?? "Проверьте форму");
+      return;
+    }
+    toast.success(productId ? "Товар сохранён — сайт обновлён" : "Товар создан");
+    if (!productId && result.id) router.push(`/admin/products/${result.id}`);
     router.refresh();
   };
 
+  const tr = v.translations[lang];
+
   return (
-    <form onSubmit={handleSubmit} className="grid gap-8 lg:grid-cols-[2fr_1fr]">
-      <div className="space-y-6">
-        <section className="space-y-4 rounded-xl border border-border bg-card p-6">
-          <h2 className="font-display font-semibold">Основное</h2>
-
-          <div>
-            <Label htmlFor="name">Название</Label>
-            <Input
-              id="name"
-              name="name"
-              value={name}
-              required
-              onChange={(e) => {
-                setName(e.target.value);
-                if (!slugTouched) setSlug(slugify(e.target.value));
-              }}
-            />
-            {errors.name && <p className="mt-1 text-xs text-destructive">{errors.name}</p>}
-          </div>
-
-          <div>
-            <Label htmlFor="slug">Slug (URL)</Label>
-            <Input
-              id="slug"
-              value={slug}
-              onChange={(e) => {
-                setSlug(e.target.value);
-                setSlugTouched(true);
-              }}
-              required
-            />
-            {errors.slug && <p className="mt-1 text-xs text-destructive">{errors.slug}</p>}
-          </div>
-
-          <div>
-            <Label htmlFor="shortDescription">Короткое описание</Label>
-            <Textarea
-              id="shortDescription"
-              name="shortDescription"
-              rows={2}
-              defaultValue={product?.shortDescription ?? ""}
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="description">Полное описание (Markdown)</Label>
-            <Textarea
-              id="description"
-              name="description"
-              rows={6}
-              defaultValue={product?.description ?? ""}
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="ingredients">Состав (через запятую)</Label>
-            <Textarea
-              id="ingredients"
-              rows={2}
-              value={ingredients}
-              onChange={(e) => setIngredients(e.target.value)}
-              placeholder="моцарелла, томатный соус, базилик"
-            />
-          </div>
-        </section>
-
-        <section className="space-y-4 rounded-xl border border-border bg-card p-6">
-          <h2 className="font-display font-semibold">Варианты (размер / объём)</h2>
-          {variants.map((variant, index) => (
-            <div key={index} className="flex items-center gap-2">
-              <Input
-                placeholder="Название, напр. 35 см"
-                value={variant.name}
-                onChange={(e) => updateVariant(index, { name: e.target.value })}
-              />
-              <Input
-                type="number"
-                placeholder="Доплата, MDL"
-                className="w-40"
-                value={variant.priceDelta}
-                onChange={(e) => updateVariant(index, { priceDelta: Number(e.target.value) })}
-              />
-              <Button type="button" variant="ghost" size="icon" onClick={() => removeVariant(index)}>
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          ))}
-          <Button type="button" variant="outline" size="sm" onClick={addVariant}>
-            <Plus className="h-4 w-4" /> Добавить вариант
-          </Button>
-        </section>
-
-        <section className="space-y-4 rounded-xl border border-border bg-card p-6">
-          <h2 className="font-display font-semibold">SEO</h2>
-          <div>
-            <Label htmlFor="seoTitle">SEO Title</Label>
-            <Input id="seoTitle" name="seoTitle" defaultValue={product?.seoTitle ?? ""} />
-          </div>
-          <div>
-            <Label htmlFor="seoDescription">SEO Description</Label>
-            <Textarea id="seoDescription" name="seoDescription" rows={2} defaultValue={product?.seoDescription ?? ""} />
-          </div>
-          <div>
-            <Label htmlFor="seoKeywords">SEO Keywords</Label>
-            <Input id="seoKeywords" name="seoKeywords" defaultValue={product?.seoKeywords ?? ""} />
-          </div>
-          <p className="text-xs text-muted-foreground">
-            OG-картинка берётся из основного фото товара, если не задано отдельно.
-          </p>
-        </section>
+    <div className="space-y-4">
+      {/* Вкладки */}
+      <div role="tablist" className="flex flex-wrap gap-1 border-b border-border">
+        {TABS.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            role="tab"
+            aria-selected={tab === t.id}
+            onClick={() => setTab(t.id)}
+            className={cn(
+              "-mb-px flex items-center gap-1.5 border-b-2 px-3 py-2 text-sm font-medium",
+              tab === t.id ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
+            )}
+          >
+            {t.label}
+            {t.id === "texts" && missing.length > 0 && <MissingBadge />}
+            {t.id === "photos" && <span className="text-xs text-muted-foreground">({v.images.length})</span>}
+          </button>
+        ))}
       </div>
 
-      <div className="space-y-6">
-        <section className="space-y-4 rounded-xl border border-border bg-card p-6">
-          <h2 className="font-display font-semibold">Цена и категория</h2>
-          <div>
-            <Label htmlFor="price">Цена, MDL</Label>
-            <Input id="price" name="price" type="number" step="0.01" defaultValue={product?.price ?? ""} required />
-            {errors.price && <p className="mt-1 text-xs text-destructive">{errors.price}</p>}
-          </div>
-          <div>
-            <Label htmlFor="oldPrice">Старая цена (для скидки)</Label>
-            <Input id="oldPrice" name="oldPrice" type="number" step="0.01" defaultValue={product?.oldPrice ?? ""} />
-          </div>
-          <div>
-            <Label>Тип товара</Label>
-            <Select value={type} onValueChange={setType}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {PRODUCT_TYPES.map(([value, label]) => (
-                  <SelectItem key={value} value={value}>{label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label>Категория</Label>
-            <Select value={categoryId} onValueChange={setCategoryId}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
+      {/* Переключатель языка для текстовых вкладок */}
+      {(tab === "texts" || tab === "seo") && (
+        <div role="tablist" aria-label="Язык" className="flex flex-wrap gap-1 rounded-lg bg-muted p-1">
+          {LOCALES.map((l) => (
+            <button
+              key={l}
+              type="button"
+              role="tab"
+              aria-selected={lang === l}
+              onClick={() => setLang(l)}
+              className={cn(
+                "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium",
+                lang === l ? "bg-card shadow-sm" : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {LOCALE_SHORT[l]} · {LOCALE_LABELS[l]}
+              {!v.translations[l].name.trim() && <MissingBadge />}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <div className="rounded-xl border border-border bg-card p-5">
+        {tab === "main" && (
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label="Группа" error={errors.categoryId}>
+              <NativeSelect value={v.categoryId} onChange={(e) => set("categoryId", e.target.value)}>
+                <option value="">— выберите —</option>
                 {categories.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
                 ))}
-              </SelectContent>
-            </Select>
-            {errors.categoryId && <p className="mt-1 text-xs text-destructive">{errors.categoryId}</p>}
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label htmlFor="sku">Артикул (SKU)</Label>
-              <Input id="sku" name="sku" defaultValue={product?.sku ?? ""} />
+              </NativeSelect>
+            </Field>
+            <Field label="Адрес страницы (slug)" error={errors.slug} hint={`/menu/${v.slug || "…"}`}>
+              <div className="flex gap-2">
+                <Input value={v.slug} onChange={(e) => set("slug", e.target.value.toLowerCase())} placeholder="pizza-margherita" />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-11"
+                  onClick={() => set("slug", slugify(v.translations.ro.name || v.translations.ru.name || v.translations.en.name))}
+                >
+                  Из названия
+                </Button>
+              </div>
+            </Field>
+            <Field label="Цена, MDL" error={errors.price}>
+              <Input type="number" min="0" step="0.01" inputMode="decimal" value={v.price} onChange={(e) => set("price", e.target.value)} />
+            </Field>
+            <Field label="Старая цена, MDL (зачёркнутая, необязательно)" error={errors.oldPrice}>
+              <Input type="number" min="0" step="0.01" inputMode="decimal" value={v.oldPrice} onChange={(e) => set("oldPrice", e.target.value)} />
+            </Field>
+            <Field label="Артикул (SKU)">
+              <Input value={v.sku} onChange={(e) => set("sku", e.target.value)} />
+            </Field>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Порядок в группе">
+                <Input type="number" value={v.sortOrder} onChange={(e) => set("sortOrder", e.target.value)} />
+              </Field>
+              <Field label="Остаток (пусто — без учёта)">
+                <Input type="number" value={v.stock} onChange={(e) => set("stock", e.target.value)} />
+              </Field>
             </div>
-            <div>
-              <Label htmlFor="stock">Остаток</Label>
-              <Input id="stock" name="stock" type="number" defaultValue={product?.stock ?? ""} />
+            <div className="grid gap-2 sm:grid-cols-2 md:col-span-2">
+              <Toggle label="Показывать на сайте" checked={v.isActive} onChange={(x) => set("isActive", x)} />
+              <Toggle label="Хит (показывать на главной)" checked={v.isFeatured} onChange={(x) => set("isFeatured", x)} />
+              <Toggle label="Вегетарианское" checked={v.isVegetarian} onChange={(x) => set("isVegetarian", x)} />
+              <Toggle label="Острое" checked={v.isSpicy} onChange={(x) => set("isSpicy", x)} />
+              <Toggle
+                label="Алкоголь (18+)"
+                hint={selectedCategory?.kind === "ALCOHOL" ? "Группа уже 18+ — бейдж и проверка возраста включены" : "Бейдж 18+ и подтверждение возраста"}
+                checked={v.isAlcohol || selectedCategory?.kind === "ALCOHOL"}
+                disabled={selectedCategory?.kind === "ALCOHOL"}
+                onChange={(x) => set("isAlcohol", x)}
+              />
             </div>
           </div>
-          <div>
-            <Label htmlFor="sortOrder">Порядок сортировки</Label>
-            <Input id="sortOrder" name="sortOrder" type="number" defaultValue={product?.sortOrder ?? 0} />
+        )}
+
+        {tab === "texts" && (
+          <div className="space-y-4">
+            <Field label={`Название (${LOCALE_SHORT[lang]})`} error={errors.translations}>
+              <Input value={tr.name} onChange={(e) => setTr("name", e.target.value)} maxLength={200} />
+            </Field>
+            <Field label="Краткое описание (под названием в карточке)">
+              <Textarea rows={2} value={tr.shortDescription} onChange={(e) => setTr("shortDescription", e.target.value)} maxLength={500} />
+            </Field>
+            <Field label="Состав / ингредиенты (через запятую)">
+              <Input value={tr.ingredientsText} onChange={(e) => setTr("ingredientsText", e.target.value)} maxLength={2000} />
+            </Field>
+            <Field label="Полное описание (Markdown: **жирный**, списки через «-»)">
+              <Textarea rows={8} value={tr.description} onChange={(e) => setTr("description", e.target.value)} maxLength={20000} />
+            </Field>
+            <Field label="Alt-текст главного фото (что изображено)">
+              <Input value={tr.imageAlt} onChange={(e) => setTr("imageAlt", e.target.value)} maxLength={300} />
+            </Field>
+            {!tr.name.trim() && (
+              <p className="flex items-center gap-2 rounded-md bg-amber-50 p-3 text-sm text-amber-900">
+                <TriangleAlert className="size-4" /> Для этого языка нет перевода. На сайте покажется румынский текст (а если его нет — первый заполненный язык).
+              </p>
+            )}
           </div>
-        </section>
+        )}
 
-        <section className="space-y-3 rounded-xl border border-border bg-card p-6">
-          <h2 className="font-display font-semibold">Флаги</h2>
-          <FlagRow name="isActive" label="Активен (виден на сайте)" defaultChecked={product?.isActive ?? true} />
-          <FlagRow name="isFeatured" label="Хит" defaultChecked={product?.isFeatured ?? false} />
-          <FlagRow name="isAlcohol" label="Алкоголь (18+)" defaultChecked={product?.isAlcohol ?? false} />
-          <FlagRow name="isVegetarian" label="Вегетарианское" defaultChecked={product?.isVegetarian ?? false} />
-          <FlagRow name="isSpicy" label="Острое" defaultChecked={product?.isSpicy ?? false} />
-        </section>
-
-        <section className="space-y-3 rounded-xl border border-border bg-card p-6">
-          <h2 className="font-display font-semibold">Главное фото</h2>
-          {mainImagePreview && (
-            <div className="relative aspect-square w-full overflow-hidden rounded-md bg-muted">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={mainImagePreview} alt="" className="h-full w-full object-cover" />
-              <button
-                type="button"
-                onClick={() => {
-                  setMainImageFile(null);
-                  setMainImagePreview(null);
+        {tab === "photos" && (
+          <div className="space-y-4">
+            <div
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => {
+                e.preventDefault();
+                if (e.dataTransfer.files.length > 0) void uploadFiles(e.dataTransfer.files);
+              }}
+              className="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border p-6 text-center"
+            >
+              {uploading ? <Loader2 className="size-6 animate-spin text-muted-foreground" /> : <ImagePlus className="size-6 text-muted-foreground" />}
+              <p className="text-sm">Перетащите фото сюда или</p>
+              <Button type="button" variant="outline" size="sm" onClick={() => fileRef.current?.click()} disabled={uploading}>
+                Выбрать файлы
+              </Button>
+              <p className="text-xs text-muted-foreground">JPG, PNG, WEBP до 5 МБ. Первое фото — главное. Порядок меняется перетаскиванием.</p>
+              <input
+                ref={fileRef}
+                type="file"
+                multiple
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                onChange={(e) => {
+                  if (e.target.files) void uploadFiles(e.target.files);
+                  e.target.value = "";
                 }}
-                className="absolute right-2 top-2 rounded-full bg-black/60 p-1 text-white"
-                aria-label="Удалить фото"
-              >
-                <X className="h-4 w-4" />
-              </button>
+              />
             </div>
-          )}
-          <label className="flex cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed border-input p-4 text-sm text-muted-foreground hover:bg-secondary">
-            <Upload className="h-4 w-4" />
-            {mainImagePreview ? "Заменить фото" : "Загрузить фото"}
-            <input
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (!file) return;
-                setMainImageFile(file);
-                setMainImagePreview(URL.createObjectURL(file));
-              }}
-            />
-          </label>
-          {formError && <p className="text-xs text-destructive">{formError}</p>}
-        </section>
-
-        <section className="space-y-3 rounded-xl border border-border bg-card p-6">
-          <h2 className="font-display font-semibold">Галерея</h2>
-          <div className="grid grid-cols-3 gap-2">
-            {existingGallery.map((url) => (
-              <div key={url} className="relative aspect-square overflow-hidden rounded-md bg-muted">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={url} alt="" className="h-full w-full object-cover" />
-                <button
-                  type="button"
-                  onClick={() => setExistingGallery((g) => g.filter((u) => u !== url))}
-                  className="absolute right-1 top-1 rounded-full bg-black/60 p-0.5 text-white"
-                  aria-label="Удалить из галереи"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </div>
-            ))}
-            {newGalleryPreviews.map((url, index) => (
-              <div key={url} className="relative aspect-square overflow-hidden rounded-md bg-muted">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={url} alt="" className="h-full w-full object-cover" />
-                <button
-                  type="button"
-                  onClick={() => setNewGalleryFiles((files) => files.filter((_, i) => i !== index))}
-                  className="absolute right-1 top-1 rounded-full bg-black/60 p-0.5 text-white"
-                  aria-label="Убрать"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </div>
-            ))}
+            {v.images.length > 0 && (
+              <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+                {v.images.map((url, index) => (
+                  <li
+                    key={url}
+                    draggable
+                    onDragStart={() => setDragIndex(index)}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      if (dragIndex !== null) moveImage(dragIndex, index);
+                      setDragIndex(null);
+                    }}
+                    className={cn(
+                      "group relative overflow-hidden rounded-lg border bg-muted",
+                      index === 0 ? "border-primary ring-2 ring-primary/30" : "border-border",
+                      dragIndex === index && "opacity-50"
+                    )}
+                  >
+                    <div className="relative aspect-square cursor-grab">
+                      <Image src={url} alt="" fill sizes="200px" className="object-cover" />
+                    </div>
+                    {index === 0 && (
+                      <span className="absolute left-1 top-1 rounded bg-primary px-1.5 py-0.5 text-[11px] font-semibold text-primary-foreground">
+                        Главное
+                      </span>
+                    )}
+                    <div className="flex items-center justify-between gap-1 p-1">
+                      <Button type="button" variant="ghost" size="sm" disabled={index === 0} onClick={() => moveImage(index, 0)} title="Сделать главным">
+                        <Star />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => set("images", v.images.filter((u) => u !== url))}
+                        title="Убрать фото"
+                      >
+                        <Trash2 className="text-destructive" />
+                      </Button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
-          <label className="flex cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed border-input p-3 text-sm text-muted-foreground hover:bg-secondary">
-            <Upload className="h-4 w-4" /> Добавить фото в галерею
-            <input
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              multiple
-              className="hidden"
-              onChange={(e) => {
-                const files = Array.from(e.target.files ?? []);
-                setNewGalleryFiles((prev) => [...prev, ...files]);
-              }}
-            />
-          </label>
-        </section>
+        )}
 
-        <Button type="submit" size="lg" className="w-full" disabled={pending}>
-          {pending ? "Сохранение…" : product ? "Сохранить изменения" : "Создать товар"}
+        {tab === "variants" && (
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Размеры или объёмы. Цена варианта = цена товара + надбавка. Если вариантов нет — товар продаётся по базовой цене.
+            </p>
+            {errors.variants && <p className="text-sm text-destructive">{errors.variants}</p>}
+            {v.variants.map((variant, index) => (
+              <div key={index} className="space-y-3 rounded-lg border border-border p-3">
+                <div className="flex flex-wrap items-end gap-3">
+                  <Field label="Ключ (латиница)">
+                    <Input
+                      value={variant.key}
+                      onChange={(e) => {
+                        const next = [...v.variants];
+                        next[index] = { ...variant, key: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "") };
+                        set("variants", next);
+                      }}
+                      className="w-32"
+                    />
+                  </Field>
+                  <Field label="Надбавка к цене, MDL">
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={variant.priceDelta}
+                      onChange={(e) => {
+                        const next = [...v.variants];
+                        next[index] = { ...variant, priceDelta: e.target.value };
+                        set("variants", next);
+                      }}
+                      className="w-32"
+                    />
+                  </Field>
+                  <Button type="button" variant="ghost" size="sm" className="ml-auto" onClick={() => set("variants", v.variants.filter((_, i) => i !== index))}>
+                    <Trash2 className="text-destructive" /> Удалить
+                  </Button>
+                </div>
+                <div className="grid gap-2 sm:grid-cols-4">
+                  {LOCALES.map((l) => (
+                    <label key={l} className="space-y-1 text-xs font-medium">
+                      <span className="flex items-center gap-1">
+                        {LOCALE_SHORT[l]} {!variant.names[l]?.trim() && <MissingBadge />}
+                      </span>
+                      <Input
+                        value={variant.names[l]}
+                        onChange={(e) => {
+                          const next = [...v.variants];
+                          next[index] = { ...variant, names: { ...variant.names, [l]: e.target.value } };
+                          set("variants", next);
+                        }}
+                        placeholder="30 cm"
+                      />
+                    </label>
+                  ))}
+                </div>
+              </div>
+            ))}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => set("variants", [...v.variants, { key: `v${v.variants.length + 1}`, priceDelta: "0", names: emptyLocalized() }])}
+            >
+              <Plus /> Добавить вариант
+            </Button>
+          </div>
+        )}
+
+        {tab === "seo" && (
+          <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
+            <div className="space-y-4">
+              <Field label={`SEO-заголовок (${LOCALE_SHORT[lang]})`} hint={`${tr.seoTitle.length} символов, оптимально 30–60`}>
+                <Input value={tr.seoTitle} onChange={(e) => setTr("seoTitle", e.target.value)} maxLength={200} />
+              </Field>
+              <Field label="SEO-описание (meta description)" hint={`${tr.seoDescription.length} символов, оптимально 70–160`}>
+                <Textarea rows={3} value={tr.seoDescription} onChange={(e) => setTr("seoDescription", e.target.value)} maxLength={500} />
+              </Field>
+              <Field label="Ключевые слова (через запятую)">
+                <Input value={tr.seoKeywords} onChange={(e) => setTr("seoKeywords", e.target.value)} maxLength={300} />
+              </Field>
+              <Field
+                label="«Короткий ответ» для AI-поиска (40–80 слов)"
+                hint="Факты о товаре простыми словами: что это, состав, цена, как заказать. Пусто — соберётся автоматически."
+              >
+                <Textarea rows={4} value={tr.shortAnswer} onChange={(e) => setTr("shortAnswer", e.target.value)} maxLength={1500} />
+              </Field>
+              {productId && v.slug && (
+                <a
+                  href={localizedPath(lang, `/menu/${v.slug}`)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+                >
+                  Открыть страницу на сайте ({LOCALE_SHORT[lang]}) <ExternalLink className="size-3.5" />
+                </a>
+              )}
+            </div>
+            <SeoChecklist values={v} lang={lang} />
+          </div>
+        )}
+      </div>
+
+      <div className="sticky bottom-0 z-10 -mx-1 flex items-center justify-between gap-3 border-t border-border bg-background/95 px-1 py-3 backdrop-blur">
+        <p className="text-xs text-muted-foreground">
+          {missing.length > 0
+            ? `Нет перевода: ${missing.map((l) => LOCALE_SHORT[l]).join(", ")}`
+            : "Все 4 языка заполнены"}
+        </p>
+        <Button type="button" size="lg" onClick={submit} disabled={pending || uploading}>
+          {pending ? "Сохранение…" : productId ? "Сохранить изменения" : "Создать товар"}
         </Button>
       </div>
-    </form>
+    </div>
   );
 }
 
-function FlagRow({
-  name,
+function SeoChecklist({ values, lang }: { values: ProductFormValues; lang: AppLocale }) {
+  const t = values.translations[lang];
+  const checks = productSeoChecklist({ ...t, hasImage: values.images.length > 0 });
+  const done = checks.filter((c) => c.ok).length;
+  return (
+    <aside className="rounded-lg border border-border bg-muted/40 p-4">
+      <p className="font-semibold">
+        SEO-чеклист · {LOCALE_SHORT[lang]}{" "}
+        <span className="text-sm font-normal text-muted-foreground">
+          {done}/{checks.length}
+        </span>
+      </p>
+      <ul className="mt-3 space-y-2 text-sm">
+        {checks.map((check) => (
+          <li key={check.id} className="flex gap-2">
+            {check.ok ? (
+              <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success" />
+            ) : check.soft ? (
+              <Circle className="mt-0.5 size-4 shrink-0 text-amber-500" />
+            ) : (
+              <TriangleAlert className="mt-0.5 size-4 shrink-0 text-destructive" />
+            )}
+            <span>
+              {check.label}
+              {check.hint && <span className="block text-xs text-muted-foreground">{check.hint}</span>}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </aside>
+  );
+}
+
+function Field({ label, hint, error, children }: { label: string; hint?: string; error?: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-1">
+      <p className="text-sm font-medium">{label}</p>
+      {children}
+      {error ? <p className="text-xs text-destructive">{error}</p> : hint && <p className="text-xs text-muted-foreground">{hint}</p>}
+    </div>
+  );
+}
+
+function Toggle({
   label,
-  defaultChecked,
+  hint,
+  checked,
+  disabled,
+  onChange,
 }: {
-  name: string;
   label: string;
-  defaultChecked: boolean;
+  hint?: string;
+  checked: boolean;
+  disabled?: boolean;
+  onChange: (value: boolean) => void;
 }) {
   return (
-    <div className="flex items-center justify-between">
-      <Label htmlFor={name} className="font-normal">
-        {label}
-      </Label>
-      <Switch id={name} name={name} defaultChecked={defaultChecked} />
-    </div>
+    <label className="flex items-center justify-between gap-3 rounded-lg border border-border p-3 text-sm">
+      <span>
+        <span className="font-medium">{label}</span>
+        {hint && <span className="block text-xs text-muted-foreground">{hint}</span>}
+      </span>
+      <Switch checked={checked} disabled={disabled} onCheckedChange={onChange} />
+    </label>
   );
 }

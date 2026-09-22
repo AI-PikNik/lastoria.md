@@ -1,261 +1,392 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { Bike, Store } from "lucide-react";
+import { useRouter } from "@/i18n/navigation";
 import { useCart } from "@/components/cart/cart-context";
-import { getCartPricing, type PricedCart } from "@/lib/actions/cart-pricing";
+import { usePricedCart } from "@/components/cart/use-priced-cart";
 import { createOrder } from "@/lib/actions/checkout";
-import { checkoutSchema } from "@/lib/validation";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { computeDeliveryFee, type DeliveryCityView } from "@/lib/delivery";
 import { formatMoney } from "@/lib/format";
+import { isValidMoldovanPhone } from "@/lib/phone";
+import type { AppLocale } from "@/lib/i18n/locales";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
+import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 
-interface DeliveryZone {
-  name: string;
-  fee: number;
-}
+type Fulfillment = "DELIVERY" | "PICKUP";
+type Payment = "CASH" | "CARD_ON_DELIVERY";
 
 export function CheckoutForm({
-  deliveryZones,
+  cities,
   minOrderAmount,
+  pickupAddress,
 }: {
-  deliveryZones: DeliveryZone[];
+  cities: DeliveryCityView[];
   minOrderAmount: number;
+  pickupAddress: string;
 }) {
-  const { items, clear } = useCart();
+  const t = useTranslations("checkout");
+  const tRoot = useTranslations();
+  const locale = useLocale() as AppLocale;
   const router = useRouter();
-  const [pricing, setPricing] = React.useState<PricedCart | null>(null);
-  const [fulfillment, setFulfillment] = React.useState<"DELIVERY" | "PICKUP">("DELIVERY");
-  const [zone, setZone] = React.useState(deliveryZones[0]?.name ?? "");
-  const [paymentMethod, setPaymentMethod] = React.useState<"CASH" | "CARD_ON_DELIVERY">("CASH");
+  const { items, promoCode, clear, hydrated } = useCart();
+  const { data } = usePricedCart();
+
+  const deliveryAvailable = cities.length > 0;
+  const [fulfillment, setFulfillment] = React.useState<Fulfillment>(deliveryAvailable ? "DELIVERY" : "PICKUP");
+  const [cityId, setCityId] = React.useState(cities[0]?.id ?? "");
+  const [zoneId, setZoneId] = React.useState("");
+  const [payment, setPayment] = React.useState<Payment>("CASH");
+  const [ageConfirmed, setAgeConfirmed] = React.useState(false);
+  const [phone, setPhone] = React.useState("");
   const [errors, setErrors] = React.useState<Record<string, string>>({});
-  const [submitting, setSubmitting] = React.useState(false);
   const [formError, setFormError] = React.useState<string | null>(null);
+  const [pending, setPending] = React.useState(false);
+
+  const money = (v: number) => formatMoney(v, locale);
+  const city = cities.find((c) => c.id === cityId);
+  const zone = city?.zones.find((z) => z.id === zoneId);
+  const itemsTotal = data?.total ?? 0;
+  const deliveryFee = fulfillment === "DELIVERY" ? computeDeliveryFee(zone, itemsTotal) : 0;
+  const grandTotal = itemsTotal + deliveryFee;
+  const belowMin = data ? data.subtotal < minOrderAmount : false;
 
   React.useEffect(() => {
-    getCartPricing(items).then(setPricing);
-  }, [items]);
+    if (hydrated && items.length === 0 && !pending) router.replace("/cart");
+  }, [hydrated, items.length, pending, router]);
 
-  const deliveryFee =
-    fulfillment === "DELIVERY" ? deliveryZones.find((z) => z.name === zone)?.fee ?? 0 : 0;
-  const total = (pricing?.total ?? 0) + deliveryFee;
-  const belowMinimum = (pricing?.subtotal ?? 0) < minOrderAmount;
+  const msg = (key: string | undefined, values?: Record<string, string | number>) =>
+    key ? (key.startsWith("validation.") ? tRoot(key, values) : key) : undefined;
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setFormError(null);
-    setErrors({});
-
-    const formData = new FormData(event.currentTarget);
-    const raw = {
-      customerName: formData.get("customerName") ?? "",
-      phone: formData.get("phone") ?? "",
-      email: formData.get("email") ?? "",
-      fulfillment,
-      address: formData.get("address") ?? "",
-      deliveryZone: zone,
-      comment: formData.get("comment") ?? "",
-      paymentMethod,
-      items: items.map((i) => ({
-        productId: i.productId,
-        variantName: i.variantName ?? undefined,
-        qty: i.qty,
-      })),
-    };
-
-    const parsed = checkoutSchema.safeParse(raw);
-    if (!parsed.success) {
-      const fieldErrors: Record<string, string> = {};
-      for (const issue of parsed.error.issues) {
-        const key = issue.path[0]?.toString() ?? "form";
-        if (!fieldErrors[key]) fieldErrors[key] = issue.message;
-      }
-      setErrors(fieldErrors);
+    const form = new FormData(event.currentTarget);
+    const nextErrors: Record<string, string> = {};
+    if (!isValidMoldovanPhone(phone)) nextErrors.phone = "validation.phoneInvalid";
+    if (fulfillment === "DELIVERY" && deliveryAvailable && !zoneId) nextErrors.zoneId = "validation.zoneRequired";
+    if (data?.requiresAgeConfirm && !ageConfirmed) nextErrors.ageConfirmed = "validation.ageRequired";
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
+      setFormError("validation.checkForm");
+      document.getElementById(`field-${Object.keys(nextErrors)[0]}`)?.focus();
       return;
     }
 
-    setSubmitting(true);
-    try {
-      const result = await createOrder(raw);
-      if (!result.ok) {
-        setFormError(result.error ?? "Не удалось оформить заказ");
-        if (result.fieldErrors) setErrors(result.fieldErrors);
-        return;
-      }
-      clear();
-      toast.success("Заказ принят! Ожидайте звонка оператора");
-      router.push(`/order/${result.orderToken}`);
-    } catch {
-      setFormError("Произошла ошибка. Попробуйте ещё раз.");
-    } finally {
-      setSubmitting(false);
+    setPending(true);
+    setErrors({});
+    setFormError(null);
+    const result = await createOrder({
+      locale,
+      customerName: String(form.get("customerName") ?? ""),
+      phone,
+      email: String(form.get("email") ?? ""),
+      fulfillment,
+      zoneId: fulfillment === "DELIVERY" ? zoneId : "",
+      address: fulfillment === "DELIVERY" ? String(form.get("address") ?? "") : "",
+      comment: String(form.get("comment") ?? ""),
+      paymentMethod: payment,
+      ageConfirmed,
+      promoCode,
+      items,
+    });
+
+    if (!result.ok || !result.orderToken) {
+      setPending(false);
+      setErrors(result.fieldErrors ?? {});
+      setFormError(result.error ?? "validation.generic");
+      toast.error(msg(result.error ?? "validation.generic", result.errorValues));
+      return;
     }
+
+    toast.success(t("success"));
+    clear();
+    router.push(`/order/${result.orderToken}`);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="grid gap-8 md:grid-cols-[1fr_320px]">
-      <div className="space-y-5">
-        <div>
-          <Label htmlFor="customerName">Имя</Label>
-          <Input id="customerName" name="customerName" required autoComplete="name" />
-          {errors.customerName && <p className="mt-1 text-xs text-destructive">{errors.customerName}</p>}
-        </div>
+    <form onSubmit={onSubmit} noValidate className="grid gap-6 lg:grid-cols-[1fr_380px] lg:items-start">
+      <div className="space-y-6">
+        {/* Контакты */}
+        <Section title={t("contact")}>
+          <Field id="field-customerName" label={t("name")} error={msg(errors.customerName)}>
+            <Input
+              id="field-customerName"
+              name="customerName"
+              autoComplete="name"
+              required
+              minLength={2}
+              maxLength={200}
+              aria-invalid={!!errors.customerName}
+            />
+          </Field>
+          <Field id="field-phone" label={t("phone")} hint={t("phoneHint")} error={msg(errors.phone)}>
+            <Input
+              id="field-phone"
+              name="phone"
+              type="tel"
+              inputMode="tel"
+              autoComplete="tel"
+              placeholder="+373 69 123 456"
+              required
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              onBlur={() =>
+                setErrors((prev) => {
+                  const next = { ...prev };
+                  if (phone && !isValidMoldovanPhone(phone)) next.phone = "validation.phoneInvalid";
+                  else delete next.phone;
+                  return next;
+                })
+              }
+              aria-invalid={!!errors.phone}
+            />
+          </Field>
+          <Field id="field-email" label={t("email")} error={msg(errors.email)}>
+            <Input id="field-email" name="email" type="email" autoComplete="email" inputMode="email" />
+          </Field>
+        </Section>
 
-        <div>
-          <Label htmlFor="phone">Телефон</Label>
-          <Input id="phone" name="phone" required autoComplete="tel" placeholder="+373 6X XXX XXX" />
-          {errors.phone && <p className="mt-1 text-xs text-destructive">{errors.phone}</p>}
-        </div>
-
-        <div>
-          <Label htmlFor="email">Email (необязательно)</Label>
-          <Input id="email" name="email" type="email" autoComplete="email" />
-          {errors.email && <p className="mt-1 text-xs text-destructive">{errors.email}</p>}
-        </div>
-
-        <div>
-          <Label>Способ получения</Label>
-          <div className="mt-2 flex gap-3">
-            <RadioCard
-              label="Доставка"
+        {/* Способ получения */}
+        <Section title={t("fulfillment")}>
+          <div role="radiogroup" aria-label={t("fulfillment")} className="grid grid-cols-2 gap-2">
+            <Choice
               selected={fulfillment === "DELIVERY"}
-              onClick={() => setFulfillment("DELIVERY")}
+              disabled={!deliveryAvailable}
+              onSelect={() => setFulfillment("DELIVERY")}
+              icon={<Bike />}
+              label={t("delivery")}
             />
-            <RadioCard
-              label="Самовывоз"
+            <Choice
               selected={fulfillment === "PICKUP"}
-              onClick={() => setFulfillment("PICKUP")}
+              onSelect={() => setFulfillment("PICKUP")}
+              icon={<Store />}
+              label={t("pickup")}
             />
           </div>
-        </div>
+          {!deliveryAvailable && <p className="text-sm text-muted-foreground">{t("noZones")}</p>}
 
-        {fulfillment === "DELIVERY" && (
-          <>
-            {deliveryZones.length > 0 && (
-              <div>
-                <Label htmlFor="zone">Зона доставки</Label>
-                <Select value={zone} onValueChange={setZone}>
-                  <SelectTrigger id="zone">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {deliveryZones.map((z) => (
-                      <SelectItem key={z.name} value={z.name}>
-                        {z.name} — {formatMoney(z.fee)}
-                      </SelectItem>
+          {fulfillment === "DELIVERY" && deliveryAvailable && (
+            <>
+              {cities.length > 1 && (
+                <Field id="field-city" label={t("city")}>
+                  <NativeSelect
+                    id="field-city"
+                    value={cityId}
+                    onChange={(e) => {
+                      setCityId(e.target.value);
+                      setZoneId("");
+                    }}
+                  >
+                    {cities.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
                     ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-            <div>
-              <Label htmlFor="address">Адрес доставки</Label>
-              <Input id="address" name="address" required autoComplete="street-address" />
-              {errors.address && <p className="mt-1 text-xs text-destructive">{errors.address}</p>}
-            </div>
-          </>
-        )}
+                  </NativeSelect>
+                </Field>
+              )}
+              <Field
+                id="field-zoneId"
+                label={cities.length > 1 ? t("zone") : `${t("zone")} · ${city?.name ?? ""}`}
+                error={msg(errors.zoneId)}
+              >
+                <NativeSelect
+                  id="field-zoneId"
+                  value={zoneId}
+                  onChange={(e) => setZoneId(e.target.value)}
+                  aria-invalid={!!errors.zoneId}
+                  required
+                >
+                  <option value="">{t("chooseZone")}</option>
+                  {city?.zones.map((z) => (
+                    <option key={z.id} value={z.id}>
+                      {z.name} — {z.fee > 0 ? money(z.fee) : t("free")}
+                      {z.freeFrom ? ` (${t("freeFrom", { amount: money(z.freeFrom) })})` : ""}
+                    </option>
+                  ))}
+                </NativeSelect>
+              </Field>
+              <Field id="field-address" label={t("address")} error={msg(errors.address)}>
+                <Textarea
+                  id="field-address"
+                  name="address"
+                  autoComplete="street-address"
+                  rows={2}
+                  placeholder={t("addressPlaceholder")}
+                  required
+                  aria-invalid={!!errors.address}
+                />
+              </Field>
+            </>
+          )}
+          {fulfillment === "PICKUP" && (
+            <p className="rounded-lg bg-surface p-3 text-sm">{t("pickupAt", { address: pickupAddress })}</p>
+          )}
+        </Section>
 
-        <div>
-          <Label>Способ оплаты</Label>
-          <div className="mt-2 flex gap-3">
-            <RadioCard
-              label="Наличными"
-              selected={paymentMethod === "CASH"}
-              onClick={() => setPaymentMethod("CASH")}
-            />
-            <RadioCard
-              label="Картой курьеру"
-              selected={paymentMethod === "CARD_ON_DELIVERY"}
-              onClick={() => setPaymentMethod("CARD_ON_DELIVERY")}
+        {/* Оплата */}
+        <Section title={t("payment")}>
+          <div role="radiogroup" aria-label={t("payment")} className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <Choice selected={payment === "CASH"} onSelect={() => setPayment("CASH")} label={t("cash")} />
+            <Choice
+              selected={payment === "CARD_ON_DELIVERY"}
+              onSelect={() => setPayment("CARD_ON_DELIVERY")}
+              label={t("cardOnDelivery")}
             />
           </div>
-        </div>
-
-        <div>
-          <Label htmlFor="comment">Комментарий к заказу</Label>
-          <Textarea id="comment" name="comment" rows={3} />
-        </div>
+          <Field id="field-comment" label={t("comment")}>
+            <Textarea id="field-comment" name="comment" rows={2} maxLength={1000} />
+          </Field>
+        </Section>
       </div>
 
-      <aside className="h-fit space-y-4 rounded-xl border border-border bg-card p-6">
-        <h2 className="font-display font-semibold">Ваш заказ</h2>
-        <div className="space-y-1 text-sm">
-          {pricing?.lines.map((line) => (
-            <div key={`${line.productId}:${line.variantName ?? ""}`} className="flex justify-between">
-              <span className="text-muted-foreground">
-                {line.name} × {line.qty}
+      {/* Итог */}
+      <aside className="plaque space-y-4 p-5 lg:sticky lg:top-28">
+        <h2 className="font-display text-xl font-bold text-primary">{t("summary")}</h2>
+        <ul className="space-y-1.5 text-sm">
+          {data?.lines.map((line) => (
+            <li key={`${line.productId}:${line.variantKey ?? ""}`} className="flex justify-between gap-3">
+              <span>
+                {line.name}
+                {line.variantName ? ` (${line.variantName})` : ""} × {line.qty}
               </span>
-              <span>{formatMoney(line.lineTotal)}</span>
-            </div>
+              <span className="shrink-0">{money(line.lineTotal)}</span>
+            </li>
           ))}
-          <div className="flex justify-between border-t border-border pt-2">
-            <span className="text-muted-foreground">Товары</span>
-            <span>{formatMoney(pricing?.subtotal ?? 0)}</span>
+        </ul>
+        <dl className="space-y-1.5 border-t border-border-strong/50 pt-3 text-[0.95rem]">
+          <div className="flex justify-between">
+            <dt>{t("items")}</dt>
+            <dd>{data ? money(data.subtotal) : "…"}</dd>
           </div>
-          {(pricing?.discountTotal ?? 0) > 0 && (
-            <div className="flex justify-between text-primary">
-              <span>Скидка</span>
-              <span>−{formatMoney(pricing?.discountTotal ?? 0)}</span>
+          {data && data.discountTotal > 0 && (
+            <div className="flex justify-between text-olive">
+              <dt>{tRoot("cart.discount")}</dt>
+              <dd>−{money(data.discountTotal)}</dd>
             </div>
           )}
           {fulfillment === "DELIVERY" && (
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Доставка</span>
-              <span>{formatMoney(deliveryFee)}</span>
+              <dt>{t("deliveryFee")}</dt>
+              <dd>{zone ? (deliveryFee > 0 ? money(deliveryFee) : t("free")) : "—"}</dd>
             </div>
           )}
-          <div className="flex justify-between border-t border-border pt-2 text-base font-semibold">
-            <span>Итого</span>
-            <span>{formatMoney(total)}</span>
+          <div className="flex justify-between border-t border-border-strong/50 pt-2 font-display text-xl font-bold">
+            <dt>{t("total")}</dt>
+            <dd className="text-primary">{data ? money(grandTotal) : "…"}</dd>
           </div>
-        </div>
+        </dl>
 
-        {belowMinimum && (
-          <p className="text-xs text-destructive">
-            Минимальная сумма заказа — {formatMoney(minOrderAmount)}
+        {minOrderAmount > 0 && (
+          <p className={cn("text-sm", belowMin ? "font-semibold text-brick" : "text-muted-foreground")}>
+            {t("minOrder", { amount: money(minOrderAmount) })}
           </p>
         )}
-        {formError && <p className="text-sm text-destructive">{formError}</p>}
 
-        <Button type="submit" className="w-full" size="lg" disabled={submitting || belowMinimum || !pricing?.lines.length}>
-          {submitting ? "Отправка…" : "Подтвердить заказ"}
+        {data?.requiresAgeConfirm && (
+          <div className="rounded-lg border border-charcoal/30 bg-card p-3">
+            <label htmlFor="field-ageConfirmed" className="flex min-h-11 cursor-pointer items-start gap-3">
+              <Checkbox
+                id="field-ageConfirmed"
+                checked={ageConfirmed}
+                onCheckedChange={(v) => setAgeConfirmed(v === true)}
+                aria-invalid={!!errors.ageConfirmed}
+                className="mt-0.5"
+              />
+              <span>
+                <span className="font-semibold">{t("ageConfirm")}</span>
+                <span className="block text-sm text-muted-foreground">{t("ageConfirmHint")}</span>
+              </span>
+            </label>
+            {errors.ageConfirmed && <p className="mt-1 text-sm text-destructive">{msg(errors.ageConfirmed)}</p>}
+          </div>
+        )}
+
+        {formError && (
+          <p role="alert" className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+            {msg(formError)}
+          </p>
+        )}
+
+        <Button type="submit" size="lg" className="w-full" disabled={pending || !data || belowMin}>
+          {pending ? t("submitting") : t("submit")}
         </Button>
       </aside>
     </form>
   );
 }
 
-function RadioCard({
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <fieldset className="space-y-4 rounded-xl bg-card p-4 shadow-card gold-frame sm:p-5">
+      <legend className="float-left mb-1 w-full font-display text-lg font-bold text-primary">{title}</legend>
+      <div className="clear-both space-y-4">{children}</div>
+    </fieldset>
+  );
+}
+
+function Field({
+  id,
   label,
-  selected,
-  onClick,
+  hint,
+  error,
+  children,
 }: {
+  id: string;
   label: string;
+  hint?: string;
+  error?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <label htmlFor={id} className="block text-sm font-semibold">
+        {label}
+      </label>
+      {children}
+      {error ? (
+        <p id={`${id}-error`} className="text-sm text-destructive">
+          {error}
+        </p>
+      ) : (
+        hint && <p className="text-xs text-muted-foreground">{hint}</p>
+      )}
+    </div>
+  );
+}
+
+function Choice({
+  selected,
+  disabled,
+  onSelect,
+  label,
+  icon,
+}: {
   selected: boolean;
-  onClick: () => void;
+  disabled?: boolean;
+  onSelect: () => void;
+  label: string;
+  icon?: React.ReactNode;
 }) {
   return (
     <button
       type="button"
-      onClick={onClick}
-      aria-pressed={selected}
-      className={`flex-1 rounded-md border px-4 py-2 text-sm font-medium ${
-        selected
-          ? "border-primary bg-primary text-primary-foreground"
-          : "border-input bg-card hover:bg-secondary"
-      }`}
+      role="radio"
+      aria-checked={selected}
+      disabled={disabled}
+      onClick={onSelect}
+      className={cn(
+        "flex min-h-12 items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold transition-colors disabled:opacity-40 [&_svg]:size-5",
+        selected ? "border-primary bg-primary text-primary-foreground" : "border-border-strong bg-background hover:bg-surface"
+      )}
     >
+      {icon}
       {label}
     </button>
   );

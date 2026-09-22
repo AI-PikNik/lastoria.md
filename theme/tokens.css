@@ -1,0 +1,104 @@
+/*
+ * ПАЛИТРА ТЕМЫ «ВИНТАЖНЫЙ ПОСТЕР»
+ * ────────────────────────────────────────────────────────────────
+ * Это единственное место, где заданы цвета сайта. Компоненты используют
+ * только смысловые имена (bg-background, text-primary, border-gold …),
+ * поэтому, чтобы перекрасить сайт, достаточно поменять значения ниже.
+ *
+ * Сырые цвета постера → смысловые роли:
+ *   пергамент   #F6EBD8 / #F3E4C8 → фон страницы, «плашки»
+ *   винный      #7A1F1F           → главный акцент, логотип, кнопки
+ *   оливковый   #4E6B3A           → ветви, второстепенные кнопки, «вег.»
+ *   терракота   #B85A32 / #8C3B22 → акции, скидки, печь
+ *   уголь       #2B2118           → текст
+ *   огонь       #E08A2A … #F2C14E → «хит», тёплые подсветки
+ *   карточка    #FFF8EE           → карточки товаров
+ *   золото      #C7A15A           → рамки, орнаменты, разделители
+ */
+
+:root {
+  /* — сырые цвета постера — */
+  --c-parchment: #f6ebd8;
+  --c-parchment-deep: #f3e4c8;
+  --c-wine: #7a1f1f;
+  --c-wine-dark: #5e1616;
+  --c-olive: #4e6b3a;
+  --c-olive-dark: #3d5530;
+  --c-terracotta: #b85a32;
+  --c-brick: #8c3b22;
+  --c-charcoal: #2b2118;
+  --c-fire: #e08a2a;
+  --c-fire-light: #f2c14e;
+  --c-cream: #fff8ee;
+  --c-gold: #c7a15a;
+  --c-gold-soft: #e3cfa0;
+
+  /* — смысловые роли (их используют компоненты) — */
+  --background: var(--c-parchment);
+  --foreground: var(--c-charcoal);
+  --surface: var(--c-parchment-deep);
+
+  --card: var(--c-cream);
+  --card-foreground: var(--c-charcoal);
+  --popover: var(--c-cream);
+  --popover-foreground: var(--c-charcoal);
+
+  --primary: var(--c-wine);
+  --primary-hover: var(--c-wine-dark);
+  --primary-foreground: var(--c-cream);
+
+  --secondary: var(--c-olive);
+  --secondary-foreground: var(--c-cream);
+
+  --muted: var(--c-parchment-deep);
+  /* контраст с пергаментом ≈ 5.7:1 (WCAG AA) */
+  --muted-foreground: #6b5646;
+
+  --accent: var(--c-terracotta);
+  --accent-foreground: var(--c-cream);
+
+  --highlight: var(--c-fire-light);
+  --highlight-foreground: var(--c-charcoal);
+
+  --destructive: #9e2a1f;
+  --destructive-foreground: var(--c-cream);
+
+  --success: var(--c-olive);
+  --success-foreground: var(--c-cream);
+
+  --border: #e2cfae;
+  --border-strong: var(--c-gold);
+  --input: #d9c29b;
+  --ring: var(--c-wine);
+
+  --radius: 0.75rem;
+
+  /* тени — тёплые, «бумажные» */
+  --elev-card: 0 1px 0 rgba(199, 161, 90, 0.35), 0 6px 18px -8px rgba(43, 33, 24, 0.25);
+  --elev-lift: 0 2px 0 rgba(199, 161, 90, 0.45), 0 14px 32px -12px rgba(43, 33, 24, 0.35);
+}
+
+/*
+ * АДМИНКА — нейтральная и плотная, с тёплым винным акцентом.
+ * Включается атрибутом data-theme="admin" на <body> админки.
+ */
+[data-theme="admin"] {
+  --background: #f5f4f2;
+  --foreground: #1f1b17;
+  --surface: #ecebe8;
+  --card: #ffffff;
+  --card-foreground: #1f1b17;
+  --popover: #ffffff;
+  --popover-foreground: #1f1b17;
+  --secondary: #e9e6e1;
+  --secondary-foreground: #1f1b17;
+  --muted: #efedea;
+  --muted-foreground: #5f5850;
+  --accent: #b85a32;
+  --border: #e2dfda;
+  --border-strong: #cfc9c0;
+  --input: #d6d1ca;
+  --radius: 0.5rem;
+  --elev-card: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --elev-lift: 0 4px 12px rgba(0, 0, 0, 0.08);
+}

@@ -1,0 +1,86 @@
+/*
+ * ДЕКОР ТЕМЫ: бумага, золотые рамки, «плашки», скатерть, флаг.
+ * Классы используются в theme/decor/*.tsx и на страницах.
+ * Все цвета берутся из theme/tokens.css.
+ */
+
+/* Лёгкая текстура старой бумаги: пятна + мелкое зерно (без картинок) */
+.paper-texture {
+  background-color: var(--background);
+  background-image:
+    radial-gradient(ellipse at 12% 8%, rgba(199, 161, 90, 0.16), transparent 45%),
+    radial-gradient(ellipse at 88% 92%, rgba(140, 59, 34, 0.08), transparent 50%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .25 0 0 0 0 .15 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Пергаментная «плашка» с золотой двойной рамкой — как вывеска на постере */
+.plaque {
+  position: relative;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(255, 248, 238, 0.9), transparent 70%),
+    var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: calc(var(--radius) + 2px);
+  box-shadow:
+    inset 0 0 0 4px var(--surface),
+    inset 0 0 0 5px rgba(199, 161, 90, 0.6),
+    var(--elev-card);
+}
+
+/* Тонкая золотая рамка для карточек и изображений */
+.gold-frame {
+  border: 1px solid var(--border-strong);
+  box-shadow:
+    inset 0 0 0 3px var(--card),
+    inset 0 0 0 4px rgba(199, 161, 90, 0.45);
+}
+
+/* Красно-белая клетчатая скатерть — узкая полоса-разделитель */
+.checkered {
+  background-color: var(--c-cream);
+  background-image:
+    linear-gradient(45deg, rgba(122, 31, 31, 0.55) 25%, transparent 25%, transparent 75%, rgba(122, 31, 31, 0.55) 75%),
+    linear-gradient(45deg, rgba(122, 31, 31, 0.55) 25%, transparent 25%, transparent 75%, rgba(122, 31, 31, 0.55) 75%);
+  background-size: 14px 14px;
+  background-position: 0 0, 7px 7px;
+}
+
+/* Итальянский флаг — только шапка и подвал */
+.flag-stripe {
+  background: linear-gradient(
+    90deg,
+    #3f7a3a 0 33.33%,
+    var(--c-cream) 33.33% 66.66%,
+    #a82a25 66.66% 100%
+  );
+}
+
+/* Золотая линия-разделитель с ромбом в центре */
+.gold-rule {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--border-strong);
+}
+.gold-rule::before,
+.gold-rule::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-strong), transparent);
+}
+
+/* Тёплое «печное» свечение для героя */
+.fire-glow {
+  background:
+    radial-gradient(ellipse at 70% 80%, rgba(224, 138, 42, 0.28), transparent 55%),
+    radial-gradient(ellipse at 20% 20%, rgba(242, 193, 78, 0.18), transparent 50%);
+}
+
+/* Скрыть полосу прокрутки у горизонтальных списков (чипы групп) */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

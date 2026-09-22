@@ -10,16 +10,25 @@ datasource db {
   provider = "postgresql"
 }
 
+enum Locale {
+  ro
+  ru
+  en
+  it
+}
+
 enum UserRole {
   ADMIN
   MANAGER
 }
 
-enum ProductType {
+/// Тип группы товаров. PRODUCT_TYPE-промо таргетирует именно эти значения.
+enum CategoryKind {
   PIZZA
   DRINK
   ALCOHOL
   OTHER
+  CUSTOM
 }
 
 enum PromoType {
@@ -93,64 +102,100 @@ model User {
   @@map("users")
 }
 
+/// Группа товаров (Pizza, Băuturi, Alcool, Altele и любые новые из админки)
 model Category {
-  id              String    @id @default(cuid())
-  name            String
-  slug            String    @unique
-  description     String?
-  sortOrder       Int       @default(0)
-  isActive        Boolean   @default(true)
-  seoTitle        String?
-  seoDescription  String?
-  products        Product[]
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id                 String                @id @default(cuid())
+  slug               String                @unique
+  sortOrder          Int                   @default(0)
+  isActive           Boolean               @default(true)
+  /// Стартовые группы нельзя удалить — только скрыть
+  isSystem           Boolean               @default(false)
+  kind               CategoryKind          @default(CUSTOM)
+  requiresAgeConfirm Boolean               @default(false)
+  imageUrl           String?
+  translations       CategoryTranslation[]
+  products           Product[]
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
 
-  @@index([isActive])
+  @@index([isActive, sortOrder])
+  @@index([kind])
   @@map("categories")
 }
 
+model CategoryTranslation {
+  id             String   @id @default(cuid())
+  categoryId     String
+  category       Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  locale         Locale
+  name           String
+  description    String?
+  seoTitle       String?
+  seoDescription String?
+
+  @@unique([categoryId, locale])
+  @@map("category_translations")
+}
+
 model Product {
-  id               String      @id @default(cuid())
+  id           String               @id @default(cuid())
+  slug         String               @unique
+  categoryId   String
+  category     Category             @relation(fields: [categoryId], references: [id])
+  price        Decimal              @db.Decimal(10, 2)
+  oldPrice     Decimal?             @db.Decimal(10, 2)
+  isAlcohol    Boolean              @default(false)
+  isVegetarian Boolean              @default(false)
+  isSpicy      Boolean              @default(false)
+  isActive     Boolean              @default(true)
+  isFeatured   Boolean              @default(false)
+  sku          String?
+  sortOrder    Int                  @default(0)
+  stock        Int?
+  imageUrl     String?
+  galleryUrls  Json                 @default("[]")
+  /// [{ key, priceDelta, names: { ro, ru, en, it } }]
+  variants     Json                 @default("[]")
+  ogImageUrl   String?
+  translations ProductTranslation[]
+  orderItems   OrderItem[]
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  @@index([categoryId])
+  @@index([isActive])
+  @@index([isAlcohol])
+  @@index([isFeatured])
+  @@map("products")
+}
+
+model ProductTranslation {
+  id               String  @id @default(cuid())
+  productId        String
+  product          Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  locale           Locale
   name             String
-  slug             String      @unique
-  description      String?
   shortDescription String?
-  categoryId       String
-  category         Category    @relation(fields: [categoryId], references: [id])
-  type             ProductType
-  price            Decimal     @db.Decimal(10, 2)
-  oldPrice         Decimal?    @db.Decimal(10, 2)
-  isAlcohol        Boolean     @default(false)
-  isVegetarian     Boolean     @default(false)
-  isSpicy          Boolean     @default(false)
-  isActive         Boolean     @default(true)
-  isFeatured       Boolean     @default(false)
-  sku              String?
-  sortOrder        Int         @default(0)
-  stock            Int?
-  imageUrl         String?
-  galleryUrls      Json        @default("[]")
-  ingredients      Json        @default("[]")
-  variants         Json?
+  /// Markdown
+  description      String?
+  ingredientsText  String?
   seoTitle         String?
   seoDescription   String?
   seoKeywords      String?
-  ogImageUrl       String?
-  orderItems       OrderItem[]
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
+  /// «Короткий ответ» 40–80 слов для AI-поиска; пусто — генерируется из фактов
+  shortAnswer      String?
+  imageAlt         String?
 
-  @@index([type])
-  @@index([isActive])
-  @@index([isAlcohol])
-  @@index([categoryId])
-  @@map("products")
+  @@unique([productId, locale])
+  @@map("product_translations")
 }
 
 model Promo {
   id             String     @id @default(cuid())
+  /// Внутреннее название для админки
   name           String
+  /// Публичное название на 4 языках: { ro, ru, en, it }
+  publicNames    Json       @default("{}")
   code           String?    @unique
   type           PromoType
   value          Decimal    @db.Decimal(10, 2)
@@ -169,31 +214,71 @@ model Promo {
   @@map("promos")
 }
 
-model Order {
-  id             String          @id @default(cuid())
-  publicToken    String          @unique @default(cuid())
-  status         OrderStatus     @default(PENDING_CONFIRMATION)
-  fulfillment    FulfillmentType
-  paymentMethod  PaymentMethod   @default(CASH)
-  customerName   String
-  phone          String
-  email          String?
-  address        String?
-  comment        String?
-  subtotal       Decimal         @db.Decimal(10, 2)
-  discountTotal  Decimal         @default(0) @db.Decimal(10, 2)
-  deliveryFee    Decimal         @default(0) @db.Decimal(10, 2)
-  total          Decimal         @db.Decimal(10, 2)
-  appliedPromos  Json            @default("[]")
-  source         OrderSource     @default(SITE)
-  confirmedAt    DateTime?
-  cancelledAt    DateTime?
-  items          OrderItem[]
-  events         OrderEvent[]
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+/// Город доставки (Кишинёв и любые другие из админки)
+model DeliveryCity {
+  id        String         @id @default(cuid())
+  slug      String         @unique
+  /// { ro, ru, en, it }
+  names     Json           @default("{}")
+  sortOrder Int            @default(0)
+  isActive  Boolean        @default(true)
+  zones     DeliveryZone[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
 
-  @@index([status])
+  @@map("delivery_cities")
+}
+
+/// Район/зона доставки внутри города со своей стоимостью
+model DeliveryZone {
+  id               String       @id @default(cuid())
+  cityId           String
+  city             DeliveryCity @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  /// { ro, ru, en, it }
+  names            Json         @default("{}")
+  fee              Decimal      @db.Decimal(10, 2)
+  /// Бесплатная доставка от суммы заказа (необязательно)
+  freeFrom         Decimal?     @db.Decimal(10, 2)
+  sortOrder        Int          @default(0)
+  isActive         Boolean      @default(true)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@index([cityId])
+  @@map("delivery_zones")
+}
+
+model Order {
+  id               String          @id @default(cuid())
+  publicToken      String          @unique @default(cuid())
+  status           OrderStatus     @default(PENDING_CONFIRMATION)
+  fulfillment      FulfillmentType
+  paymentMethod    PaymentMethod   @default(CASH)
+  /// Язык, на котором клиент оформлял заказ
+  locale           Locale          @default(ro)
+  customerName     String
+  phone            String
+  email            String?
+  address          String?
+  deliveryZoneId   String?
+  deliveryCityName String?
+  deliveryZoneName String?
+  comment          String?
+  ageConfirmed     Boolean         @default(false)
+  subtotal         Decimal         @db.Decimal(10, 2)
+  discountTotal    Decimal         @default(0) @db.Decimal(10, 2)
+  deliveryFee      Decimal         @default(0) @db.Decimal(10, 2)
+  total            Decimal         @db.Decimal(10, 2)
+  appliedPromos    Json            @default("[]")
+  source           OrderSource     @default(SITE)
+  confirmedAt      DateTime?
+  cancelledAt      DateTime?
+  items            OrderItem[]
+  events           OrderEvent[]
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  @@index([status, createdAt])
   @@index([createdAt])
   @@map("orders")
 }
@@ -216,14 +301,14 @@ model OrderItem {
 }
 
 model OrderEvent {
-  id         String           @id @default(cuid())
+  id         String          @id @default(cuid())
   orderId    String
-  order      Order            @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order      Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
   fromStatus OrderStatus?
   toStatus   OrderStatus
   actor      OrderEventActor
   note       String?
-  createdAt  DateTime         @default(now())
+  createdAt  DateTime        @default(now())
 
   @@index([orderId])
   @@map("order_events")
@@ -243,20 +328,43 @@ model NotificationLog {
   @@map("notification_logs")
 }
 
+/// Переопределения UI-словарей из админки (базовые тексты — в messages/*.json)
+model UiTranslation {
+  id        String   @id @default(cuid())
+  key       String
+  locale    Locale
+  value     String
+  updatedAt DateTime @updatedAt
+
+  @@unique([key, locale])
+  @@map("ui_translations")
+}
+
 model Settings {
-  id                    String   @id @default("main")
-  restaurantName        String   @default("La Storia")
-  restaurantPhone       String   @default("+373 00 000 000")
-  restaurantAddress     String   @default("Chișinău, Republica Moldova")
-  restaurantEmail       String?
-  workingHours          String   @default("10:00–22:00")
-  minOrderAmount        Decimal  @default(0) @db.Decimal(10, 2)
-  deliveryZones         Json     @default("[]")
-  seoDefaultTitle       String   @default("La Storia — pizzerie autentică în Moldova")
-  seoDefaultDescription String   @default("Comandă pizza, băuturi și mâncare gata în La Storia. Livrare și ridicare în Chișinău.")
-  telegramChatId        String?
-  emailSenderAddress    String?
-  updatedAt             DateTime @updatedAt
+  id                  String   @id @default("main")
+  restaurantName      String   @default("La Storia")
+  restaurantPhone     String   @default("+373 00 000 000")
+  restaurantAddress   String   @default("Chișinău, Republica Moldova")
+  restaurantEmail     String?
+  /// { ro, ru, en, it }
+  workingHours        Json     @default("{}")
+  minOrderAmount      Decimal  @default(0) @db.Decimal(10, 2)
+  /// SEO по умолчанию: { ro, ru, en, it }
+  seoTitles           Json     @default("{}")
+  seoDescriptions     Json     @default("{}")
+  /// «Короткий ответ» главной страницы: { ro, ru, en, it }; пусто — из фактов
+  shortAnswers        Json     @default("{}")
+  telegramChatId      String?
+  emailSenderAddress  String?
+  logoUrl             String?
+  faviconUrl          String?
+  heroImageUrl        String?
+  geoLat              Float?
+  geoLng              Float?
+  cookieBannerEnabled Boolean  @default(true)
+  /// ID Google Analytics (G-XXXX) — грузится только после согласия на cookies
+  analyticsId         String?
+  updatedAt           DateTime @updatedAt
 
   @@map("settings")
 }

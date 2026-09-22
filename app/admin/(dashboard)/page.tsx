@@ -31,9 +31,9 @@ export default async function AdminDashboardPage() {
       </div>
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
-        <StatCard title="Выручка" value={formatMoney(summary.revenue)} />
+        <StatCard title="Выручка" value={formatMoney(summary.revenue, "admin")} />
         <StatCard title="Заказов" value={String(summary.ordersCount)} />
-        <StatCard title="Средний чек" value={formatMoney(summary.avgOrderValue)} />
+        <StatCard title="Средний чек" value={formatMoney(summary.avgOrderValue, "admin")} />
         <StatCard title="Неподтверждённые" value={String(summary.pendingCount)} />
         <StatCard title="Подтверждено, %" value={`${ratio}%`} hint="от подтверждённых + неподтверждённых" />
       </div>
@@ -62,7 +62,7 @@ export default async function AdminDashboardPage() {
                 <p className="text-muted-foreground">{formatDateTime(order.createdAt)}</p>
               </div>
               <div className="flex items-center gap-3">
-                <span className="font-semibold">{formatMoney(order.total)}</span>
+                <span className="font-semibold">{formatMoney(order.total, "admin")}</span>
                 <Badge variant="outline" className={ORDER_STATUS_COLORS[order.status]}>
                   {ORDER_STATUS_LABELS[order.status]}
                 </Badge>

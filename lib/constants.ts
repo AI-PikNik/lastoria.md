@@ -1,17 +1,19 @@
 import type {
+  CategoryKind,
   FulfillmentType,
   OrderStatus,
   PaymentMethod,
-  ProductType,
 } from "@/lib/generated/prisma/client";
 
 export const CURRENCY = "MDL";
 
-export const PRODUCT_TYPE_LABELS: Record<ProductType, string> = {
+/** Тип группы товаров (для промо «по типу» и аналитики). Подписи — для админки. */
+export const CATEGORY_KIND_LABELS: Record<CategoryKind, string> = {
   PIZZA: "Пицца",
   DRINK: "Напитки",
-  ALCOHOL: "Алкоголь",
+  ALCOHOL: "Алкоголь (18+)",
   OTHER: "Прочее",
+  CUSTOM: "Своя группа",
 };
 
 export const FULFILLMENT_LABELS: Record<FulfillmentType, string> = {
@@ -70,4 +72,11 @@ export const ALLOWED_UPLOAD_MIME_TYPES = [
   "image/jpeg",
   "image/png",
   "image/webp",
+];
+/** Для логотипа и favicon дополнительно разрешены SVG и ICO */
+export const ALLOWED_BRAND_MIME_TYPES = [
+  ...ALLOWED_UPLOAD_MIME_TYPES,
+  "image/svg+xml",
+  "image/x-icon",
+  "image/vnd.microsoft.icon",
 ];

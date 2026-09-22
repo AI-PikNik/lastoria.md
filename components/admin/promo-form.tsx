@@ -16,7 +16,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { createPromo, updatePromo } from "@/lib/actions/promos";
-import { PRODUCT_TYPE_LABELS } from "@/lib/constants";
+import { CATEGORY_KIND_LABELS } from "@/lib/constants";
+import { LocalizedFields } from "./localized-fields";
+import { toLocalized } from "@/lib/admin-forms";
 
 interface Option {
   id: string;
@@ -26,6 +28,7 @@ interface Option {
 interface PromoData {
   id: string;
   name: string;
+  publicNames: unknown;
   code: string | null;
   type: string;
   value: number;
@@ -55,6 +58,7 @@ export function PromoForm({
   const [type, setType] = React.useState(promo?.type ?? "PERCENT");
   const [scope, setScope] = React.useState(promo?.scope ?? "PRODUCT");
   const [targetIds, setTargetIds] = React.useState<string[]>(promo?.targetIds ?? []);
+  const [publicNames, setPublicNames] = React.useState(toLocalized(promo?.publicNames));
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [formError, setFormError] = React.useState<string | null>(null);
   const [pending, setPending] = React.useState(false);
@@ -72,6 +76,7 @@ export function PromoForm({
     const formData = new FormData(event.currentTarget);
     formData.set("type", type);
     formData.set("scope", scope);
+    formData.set("publicNames", JSON.stringify(publicNames));
     formData.set("targetIds", JSON.stringify(scope === "CART" ? [] : targetIds));
 
     const result = promo
@@ -97,20 +102,29 @@ export function PromoForm({
       : scope === "CATEGORY"
       ? categories
       : scope === "PRODUCT_TYPE"
-      ? Object.entries(PRODUCT_TYPE_LABELS).map(([id, name]) => ({ id, name }))
+      ? Object.entries(CATEGORY_KIND_LABELS).map(([id, name]) => ({ id, name }))
       : [];
 
   return (
     <form onSubmit={handleSubmit} className="max-w-2xl space-y-6">
       <div className="space-y-4 rounded-xl border border-border bg-card p-6">
         <div>
-          <Label htmlFor="name">Название</Label>
+          <Label htmlFor="name">Внутреннее название (видно только в админке)</Label>
           <Input id="name" name="name" defaultValue={promo?.name} required />
           {errors.name && <p className="mt-1 text-xs text-destructive">{errors.name}</p>}
         </div>
+        <LocalizedFields
+          id="publicNames"
+          label="Название для покупателей (в корзине)"
+          hint="Пустые языки заменяются румынским названием, а если и его нет — внутренним."
+          value={publicNames}
+          onChange={setPublicNames}
+          maxLength={200}
+        />
         <div>
           <Label htmlFor="code">Промокод (необязательно)</Label>
-          <Input id="code" name="code" defaultValue={promo?.code ?? ""} placeholder="LETO2026" />
+          <Input id="code" name="code" defaultValue={promo?.code ?? ""} placeholder="LETO2026" className="uppercase" />
+          <p className="mt-1 text-xs text-muted-foreground">Если указан — скидка действует только после ввода кода в корзине. Пусто — применяется автоматически.</p>
           {errors.code && <p className="mt-1 text-xs text-destructive">{errors.code}</p>}
         </div>
 
@@ -141,8 +155,8 @@ export function PromoForm({
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="PRODUCT">Товар</SelectItem>
-              <SelectItem value="CATEGORY">Категория</SelectItem>
-              <SelectItem value="PRODUCT_TYPE">Тип товара</SelectItem>
+              <SelectItem value="CATEGORY">Группа товаров</SelectItem>
+              <SelectItem value="PRODUCT_TYPE">Тип группы (пицца, напитки…)</SelectItem>
               <SelectItem value="CART">Вся корзина</SelectItem>
             </SelectContent>
           </Select>

@@ -20,7 +20,7 @@ export function SalesChart({ data }: { data: SalesPoint[] }) {
         <XAxis dataKey="label" stroke="var(--muted-foreground)" fontSize={12} />
         <YAxis stroke="var(--muted-foreground)" fontSize={12} width={70} />
         <Tooltip
-          formatter={(value) => formatMoney(Number(value ?? 0))}
+          formatter={(value) => formatMoney(Number(value ?? 0), "admin")}
           contentStyle={{
             background: "var(--card)",
             border: "1px solid var(--border)",

@@ -10,6 +10,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { OrderActions } from "@/components/admin/order-actions";
+import { LOCALE_LABELS, isLocale } from "@/lib/i18n/locales";
 
 export default async function AdminOrderDetailPage({
   params,
@@ -58,34 +59,34 @@ export default async function AdminOrderDetailPage({
                     </span>
                   )}
                 </span>
-                <span>{formatMoney(item.lineTotal)}</span>
+                <span>{formatMoney(item.lineTotal, "admin")}</span>
               </div>
             ))}
             <div className="space-y-1 border-t border-border pt-3">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Товары</span>
-                <span>{formatMoney(order.subtotal)}</span>
+                <span>{formatMoney(order.subtotal, "admin")}</span>
               </div>
               {Number(order.discountTotal) > 0 && (
                 <div className="flex justify-between text-primary">
                   <span>Скидка</span>
-                  <span>−{formatMoney(order.discountTotal)}</span>
+                  <span>−{formatMoney(order.discountTotal, "admin")}</span>
                 </div>
               )}
               {appliedPromos.map((p) => (
                 <p key={p.id} className="text-xs text-muted-foreground">
-                  Промо «{p.name}»: −{formatMoney(p.discountAmount)}
+                  Промо «{p.name}»: −{formatMoney(p.discountAmount, "admin")}
                 </p>
               ))}
               {Number(order.deliveryFee) > 0 && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Доставка</span>
-                  <span>{formatMoney(order.deliveryFee)}</span>
+                  <span>{formatMoney(order.deliveryFee, "admin")}</span>
                 </div>
               )}
               <div className="flex justify-between font-semibold">
                 <span>Итого</span>
-                <span>{formatMoney(order.total)}</span>
+                <span>{formatMoney(order.total, "admin")}</span>
               </div>
             </div>
           </CardContent>
@@ -97,8 +98,13 @@ export default async function AdminOrderDetailPage({
             <Row label="Имя" value={order.customerName} />
             <Row label="Телефон" value={order.phone} />
             {order.email && <Row label="Email" value={order.email} />}
+            <Row label="Язык клиента" value={isLocale(order.locale) ? LOCALE_LABELS[order.locale] : order.locale} />
             <Row label="Способ получения" value={FULFILLMENT_LABELS[order.fulfillment]} />
+            {order.deliveryZoneName && (
+              <Row label="Район" value={[order.deliveryCityName, order.deliveryZoneName].filter(Boolean).join(", ")} />
+            )}
             {order.address && <Row label="Адрес" value={order.address} />}
+            {order.ageConfirmed && <Row label="18+" value="Клиент подтвердил возраст — проверьте документ при выдаче" />}
             <Row label="Оплата" value={PAYMENT_METHOD_LABELS[order.paymentMethod]} />
             {order.comment && <Row label="Комментарий" value={order.comment} />}
           </CardContent>

@@ -1,0 +1,377 @@
+{
+  "meta": {
+    "subtitle": "Pizzeria tradizionale italiana",
+    "tagline": "La vera pizza nasce da una grande storia.",
+    "defaultTitle": "La Storia — pizzeria tradizionale italiana a Chișinău",
+    "defaultDescription": "Pizza cotta nel forno, bevande e dolci con consegna a Chișinău o ritiro in sede. Ordina online in pochi minuti.",
+    "city": "Chișinău"
+  },
+  "common": {
+    "currency": "MDL",
+    "loading": "Caricamento…",
+    "close": "Chiudi",
+    "skipToContent": "Vai al contenuto"
+  },
+  "nav": {
+    "home": "Home",
+    "menu": "Menù",
+    "delivery": "Consegna",
+    "about": "Chi siamo",
+    "contacts": "Contatti",
+    "cart": "Carrello",
+    "openMenu": "Apri il menù",
+    "closeMenu": "Chiudi il menù",
+    "language": "Lingua",
+    "mainNav": "Navigazione principale",
+    "breadcrumbs": "Percorso"
+  },
+  "header": {
+    "call": "Chiamaci",
+    "cartLabel": "Carrello, articoli: {count}",
+    "cart": "Carrello"
+  },
+  "footer": {
+    "about": "Pizzeria italiana a Chișinău. Pizza, bevande e dolci con consegna o ritiro in sede.",
+    "info": "Informazioni",
+    "hours": "Orari",
+    "address": "Indirizzo",
+    "phone": "Telefono",
+    "rights": "Tutti i diritti riservati.",
+    "links": {
+      "about": "Chi siamo",
+      "delivery": "Consegna e pagamento",
+      "contacts": "Contatti",
+      "agePolicy": "Alcolici 18+",
+      "privacy": "Informativa sulla privacy",
+      "terms": "Condizioni di vendita",
+      "cookies": "Cookie policy"
+    }
+  },
+  "home": {
+    "heroCta": "Scopri il menù",
+    "heroSecondary": "Condizioni di consegna",
+    "heroImageAlt": "Poster La Storia: una famiglia accanto al forno a legna, una pizza Margherita sulla pala",
+    "hitsTitle": "I più amati",
+    "allMenu": "Tutto il menù",
+    "promosTitle": "Offerte speciali",
+    "storyTitle": "La storia di La Storia",
+    "story": {
+      "p1": "La vera pizza nasce dalla pazienza: l'impasto ha bisogno di tempo, il fuoco non si affretta e gli ingredienti semplici parlano più forte.",
+      "p2": "Per questo La Storia cucina secondo la tradizione italiana — salsa di pomodoro, mozzarella, basilico e olio d'oliva, cotti fino al cornicione dorato.",
+      "p3": "Ordina online e un operatore ti chiamerà per confermare."
+    },
+    "deliveryTitle": "Consegna",
+    "deliveryText": "Consegniamo nei settori di Chișinău. Ordine minimo — {min}.",
+    "pickupTitle": "Ritiro in sede",
+    "pickupText": "Ritira l'ordine di persona — senza costi di consegna.",
+    "paymentTitle": "Pagamento",
+    "paymentText": "Contanti o carta al corriere / alla cassa.",
+    "factsTitle": "In breve",
+    "shortAnswerTitle": "Risposta breve",
+    "shortAnswer": "{brand} è una pizzeria italiana a {city}. Vendiamo pizza, bevande analcoliche, alcolici (solo 18+) e snack. Gli ordini si fanno online sul sito; un operatore richiama per la conferma. Consegniamo nei settori della città ed è possibile il ritiro in sede. Orari: {hours}. Ordine minimo: {min}. Prezzi in MDL, pagamento in contanti o con carta alla consegna.",
+    "heroTitle": "Pizza tradizionale italiana a Chișinău",
+    "groupsTitle": "Cosa prepariamo",
+    "groupsSubtitle": "Scegli una sezione del menù",
+    "hitsSubtitle": "La scelta dei nostri ospiti",
+    "promosSubtitle": "Prezzi speciali in questo momento",
+    "storySubtitle": "Pizza, Pasta, Amore, Sempre"
+  },
+  "facts": {
+    "hours": "Orari",
+    "minOrder": "Ordine minimo",
+    "fulfillment": "Consegna e ritiro",
+    "fulfillmentValue": "Consegna in città e ritiro in sede",
+    "currency": "Valuta",
+    "alcohol": "Alcolici",
+    "alcoholValue": "Solo per maggiori di 18 anni",
+    "phone": "Telefono"
+  },
+  "menu": {
+    "title": "Menù",
+    "description": "Menù {brand}: pizza, bevande, alcolici e snack. Ordina online con consegna o ritiro in sede.",
+    "groupDescription": "{group} nel menù {brand}. Ordina online con consegna a Chișinău.",
+    "all": "Tutto il menù",
+    "groups": "Gruppi di prodotti",
+    "filters": "Filtri",
+    "apply": "Applica",
+    "reset": "Azzera",
+    "onlyPromo": "Solo offerte",
+    "spicy": "Piccante",
+    "vegetarian": "Vegetariano",
+    "alcohol": "Alcolici 18+",
+    "priceFrom": "da",
+    "priceTo": "a",
+    "price": "Prezzo, MDL",
+    "minPrice": "Prezzo minimo",
+    "maxPrice": "Prezzo massimo",
+    "empty": "Nessun prodotto corrisponde ai filtri. Prova a modificarli.",
+    "showResults": "Mostra i risultati",
+    "subtitle": "Pizza, bevande e molto altro"
+  },
+  "badges": {
+    "hit": "Più amato",
+    "promo": "Offerta",
+    "age18": "18+",
+    "spicy": "Piccante",
+    "vegetarian": "Veg"
+  },
+  "product": {
+    "addToCart": "Aggiungi",
+    "addToCartFull": "Aggiungi al carrello",
+    "added": "«{name}» aggiunto al carrello",
+    "variant": "Variante",
+    "quantity": "Quantità",
+    "decrease": "Diminuisci la quantità",
+    "increase": "Aumenta la quantità",
+    "ingredients": "Ingredienti",
+    "description": "Descrizione",
+    "shortAnswerTitle": "In breve",
+    "shortAnswer": "{name} — {category} del menù {brand} ({city}), al prezzo di {price}. {extra}Si può ordinare online con consegna in città o ritiro in sede; un operatore richiama per confermare l'ordine.",
+    "shortAnswerAlcohol": "Prodotto alcolico — venduto solo ai maggiori di 18 anni. ",
+    "notFound": "Prodotto non trovato",
+    "choose": "Scegli",
+    "related": "Potrebbe piacerti anche"
+  },
+  "cart": {
+    "title": "Carrello",
+    "empty": "Il carrello è vuoto",
+    "emptyText": "Dai un'occhiata al menù e scegli qualcosa di gustoso.",
+    "toMenu": "Vai al menù",
+    "remove": "Rimuovi «{name}» dal carrello",
+    "items": "Articoli",
+    "discount": "Sconto",
+    "promo": "Offerta «{name}»",
+    "total": "Da pagare",
+    "deliveryNote": "La consegna si calcola al checkout",
+    "checkout": "Procedi all'ordine",
+    "removedWarning": "Alcuni articoli sono stati rimossi dal carrello: non più disponibili",
+    "sticky": "Carrello · {count} art. · {total}",
+    "stickyCount": "{count, plural, one {# articolo} other {# articoli}}",
+    "promoCode": "Codice promozionale",
+    "applyCode": "Applica",
+    "codeInvalid": "Il codice non è valido o è scaduto",
+    "belowMin": "L'ordine minimo è {amount}. Aggiungi qualcos'altro dal menù."
+  },
+  "checkout": {
+    "title": "Completa l'ordine",
+    "contact": "Contatti",
+    "name": "Nome",
+    "phone": "Telefono",
+    "phoneHint": "Formato: +373 6X XXX XXX oppure 0XX XXX XXX",
+    "email": "Email (facoltativa)",
+    "fulfillment": "Modalità di ricezione",
+    "delivery": "Consegna",
+    "pickup": "Ritiro in sede",
+    "city": "Città",
+    "zone": "Settore / zona",
+    "chooseZone": "Scegli la zona",
+    "address": "Indirizzo di consegna",
+    "addressPlaceholder": "Via, civico, appartamento, scala, piano",
+    "pickupAt": "Ritiro presso: {address}",
+    "payment": "Metodo di pagamento",
+    "cash": "Contanti",
+    "cardOnDelivery": "Carta alla consegna",
+    "comment": "Note sull'ordine",
+    "summary": "Il tuo ordine",
+    "items": "Articoli",
+    "deliveryFee": "Consegna",
+    "free": "gratis",
+    "freeFrom": "gratis da {amount}",
+    "total": "Totale",
+    "minOrder": "Ordine minimo — {amount}",
+    "ageConfirm": "Confermo di avere almeno 18 anni",
+    "ageConfirmHint": "Il carrello contiene alcolici. Il corriere può chiedere un documento.",
+    "submit": "Conferma l'ordine",
+    "submitting": "Invio…",
+    "success": "Ordine ricevuto! Attendi la chiamata dell'operatore",
+    "noZones": "La consegna non è disponibile al momento — scegli il ritiro in sede."
+  },
+  "validation": {
+    "nameRequired": "Inserisci il nome",
+    "phoneInvalid": "Numero non valido. Usa +373XXXXXXXX oppure 0XXXXXXXX (Moldova o Transnistria)",
+    "emailInvalid": "Email non valida",
+    "addressRequired": "Inserisci l'indirizzo di consegna",
+    "zoneRequired": "Scegli la zona di consegna",
+    "cartEmpty": "Il carrello è vuoto",
+    "ageRequired": "Per gli alcolici conferma di avere almeno 18 anni",
+    "minOrder": "Ordine minimo — {amount}",
+    "tooMany": "Troppi tentativi. Riprova tra poco.",
+    "unavailable": "Gli articoli nel carrello non sono più disponibili. Aggiorna il carrello.",
+    "checkForm": "Controlla i dati del modulo",
+    "generic": "Si è verificato un errore. Riprova."
+  },
+  "order": {
+    "title": "Ordine n. {number}",
+    "created": "Effettuato il {date}",
+    "pendingNote": "Il tuo ordine è in attesa di conferma. Un operatore ti chiamerà a breve al numero indicato.",
+    "items": "Contenuto dell'ordine",
+    "details": "Dettagli",
+    "fulfillment": "Modalità di ricezione",
+    "address": "Indirizzo",
+    "zone": "Zona",
+    "payment": "Pagamento",
+    "phone": "Telefono",
+    "history": "Cronologia",
+    "subtotal": "Articoli",
+    "discount": "Sconto",
+    "delivery": "Consegna",
+    "total": "Totale",
+    "status": {
+      "PENDING_CONFIRMATION": "In attesa di conferma",
+      "CONFIRMED": "Confermato",
+      "PREPARING": "In preparazione",
+      "OUT_FOR_DELIVERY": "In consegna",
+      "READY_FOR_PICKUP": "Pronto per il ritiro",
+      "COMPLETED": "Completato",
+      "CANCELLED": "Annullato"
+    },
+    "pageTitle": "Stato dell'ordine"
+  },
+  "ageGate": {
+    "title": "Conferma dell'età 18+",
+    "text": "Questa sezione contiene prodotti alcolici. La vendita di alcolici ai minori di 18 anni è vietata. Conferma di avere almeno 18 anni.",
+    "confirm": "Ho 18 anni",
+    "decline": "Non ho 18 anni",
+    "pending": "È richiesta la conferma dell'età…"
+  },
+  "cookies": {
+    "title": "Cookie",
+    "text": "Usiamo cookie necessari (lingua, carrello, sessione). Quelli analitici solo con il tuo consenso.",
+    "accept": "Accetto",
+    "necessary": "Solo necessari",
+    "learnMore": "Dettagli",
+    "current": "Scelta attuale",
+    "stateAll": "tutti i cookie",
+    "stateNecessary": "solo necessari",
+    "stateNone": "non ancora fatta"
+  },
+  "lang": {
+    "label": "Lingua"
+  },
+  "errors": {
+    "notFoundTitle": "Pagina non trovata",
+    "notFoundText": "Forse è stata spostata o non è mai esistita.",
+    "backHome": "Torna alla home",
+    "errorTitle": "Qualcosa è andato storto",
+    "errorText": "Prova a ricaricare la pagina.",
+    "retry": "Riprova",
+    "toMenu": "Vedi il menù"
+  },
+  "email": {
+    "receivedSubject": "Ordine n. {number} ricevuto",
+    "receivedIntro": "Grazie! Il tuo ordine è stato ricevuto ed è in attesa di conferma.",
+    "statusSubject": "Ordine n. {number}: {status}",
+    "statusIntro": "Lo stato del tuo ordine è cambiato: {status}",
+    "number": "Ordine n. {number}",
+    "status": "Stato: {status}",
+    "total": "Totale: {total}",
+    "track": "Stato dell'ordine: {url}"
+  },
+  "pages": {
+    "about": {
+      "title": "Chi siamo",
+      "description": "La Storia — pizzeria tradizionale italiana a Chișinău. Come cuciniamo e come ordinare.",
+      "h1": "Chi è La Storia",
+      "body": {
+        "p1": "La Storia è una pizzeria in stile tradizionale italiano. Nel menù ci sono pizze, bevande analcoliche, alcolici per ospiti maggiorenni, snack, salse e dolci.",
+        "p2": "Gli ordini si fanno online: scegli i piatti, completa l'ordine e un operatore ti richiamerà per la conferma. Puoi scegliere la consegna in città o il ritiro in sede."
+      },
+      "faqTitle": "Domande frequenti"
+    },
+    "delivery": {
+      "title": "Consegna e pagamento",
+      "description": "Zone e prezzi di consegna a Chișinău, ordine minimo, ritiro in sede e metodi di pagamento di La Storia.",
+      "h1": "Consegna e pagamento",
+      "zonesTitle": "Zone di consegna",
+      "zoneCol": "Zona",
+      "feeCol": "Costo",
+      "minOrder": "Ordine minimo: {amount}.",
+      "hours": "Orari: {hours}.",
+      "paymentTitle": "Metodi di pagamento",
+      "paymentText": "Contanti o carta al corriere / alla cassa al ricevimento. Il pagamento online con carta non è disponibile.",
+      "pickupTitle": "Ritiro in sede",
+      "pickupText": "Ritira l'ordine presso: {address}.",
+      "faqTitle": "Domande frequenti"
+    },
+    "contacts": {
+      "title": "Contatti",
+      "description": "Contatti della pizzeria La Storia a Chișinău: indirizzo, telefono e orari.",
+      "h1": "Contatti",
+      "phone": "Telefono",
+      "email": "Email",
+      "address": "Indirizzo",
+      "hours": "Orari"
+    },
+    "privacy": {
+      "title": "Informativa sulla privacy",
+      "description": "Come La Storia tratta i dati personali dei clienti.",
+      "h1": "Informativa sulla privacy",
+      "body": {
+        "p1": "Quando effettui un ordine raccogliamo nome, telefono, indirizzo di consegna e, facoltativamente, l'email. Questi dati servono solo per gestire l'ordine e contattarti.",
+        "p2": "Non cediamo i dati a terzi, salvo quando necessario per consegnare l'ordine.",
+        "p3": "Il sito usa cookie necessari per lingua, carrello e sessione. I cookie analitici si attivano solo con il tuo consenso — vedi la Cookie policy.",
+        "p4": "Puoi chiedere la cancellazione dei tuoi dati personali usando i recapiti della pagina Contatti."
+      }
+    },
+    "terms": {
+      "title": "Condizioni di vendita",
+      "description": "Condizioni per effettuare ed evadere gli ordini sul sito La Storia.",
+      "h1": "Condizioni di vendita",
+      "body": {
+        "p1": "L'ordine si considera accettato dopo la conferma telefonica dell'operatore.",
+        "p2": "I prezzi sono in lei moldavi (MDL) e possono includere sconti delle offerte attive. Il pagamento avviene in contanti o con carta alla consegna.",
+        "p3": "Gli alcolici sono venduti solo ai maggiori di 18 anni, secondo la legge della Repubblica di Moldova."
+      }
+    },
+    "agePolicy": {
+      "title": "Alcolici 18+",
+      "description": "Condizioni di vendita degli alcolici sul sito La Storia — solo per maggiori di 18 anni.",
+      "h1": "Vendita di alcolici 18+",
+      "body": {
+        "p1": "La sezione «Alcolici» è riservata ai maggiori di 18 anni. Prima di aprire un prodotto alcolico o di aggiungerlo al carrello ti verrà chiesto di confermare l'età.",
+        "p2": "Ordinando alcolici confermi di avere almeno 18 anni. Il corriere può chiedere un documento."
+      }
+    },
+    "cookies": {
+      "title": "Cookie policy",
+      "description": "Quali cookie usa il sito La Storia e come gestire il consenso.",
+      "h1": "Cookie policy",
+      "body": {
+        "p1": "Cookie necessari (sempre attivi): NEXT_LOCALE — la lingua scelta; il carrello è salvato nella memoria locale del browser; la sessione di amministrazione — solo per il personale; ls_consent — la tua scelta sui cookie.",
+        "p2": "Cookie analitici (solo con consenso): statistiche anonime delle visite, se attivate dall'amministratore.",
+        "p3": "Puoi cambiare la tua scelta in qualsiasi momento con i pulsanti qui sotto. Se elimini i cookie del sito dal browser, il banner comparirà di nuovo."
+      },
+      "reset": "Cambia la scelta"
+    },
+    "faq": {
+      "q1": {
+        "q": "Come posso ordinare?",
+        "a": "Aggiungi i piatti al carrello e completa l'ordine sul sito. Un operatore ti richiamerà per la conferma."
+      },
+      "q2": {
+        "q": "Fate consegne a domicilio?",
+        "a": "Sì, nelle zone indicate nella pagina Consegna. Il costo dipende dalla zona."
+      },
+      "q3": {
+        "q": "Qual è l'ordine minimo?",
+        "a": "L'ordine minimo è {min}."
+      },
+      "q4": {
+        "q": "Come posso pagare?",
+        "a": "In contanti o con carta alla consegna. Il pagamento online non è disponibile."
+      },
+      "q5": {
+        "q": "Posso ritirare l'ordine di persona?",
+        "a": "Sì, presso: {address}."
+      },
+      "q6": {
+        "q": "Vendete alcolici?",
+        "a": "Sì, solo ai maggiori di 18 anni. Il corriere può chiedere un documento."
+      },
+      "q7": {
+        "q": "Quali sono gli orari?",
+        "a": "{hours}."
+      }
+    }
+  }
+}
