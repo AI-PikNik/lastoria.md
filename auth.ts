@@ -6,6 +6,10 @@ import { prisma } from "@/lib/prisma";
 export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: "jwt" },
   pages: { signIn: "/admin/login" },
+  // Приложение почти всегда работает за обратным прокси (Nginx в aaPanel и т.п.),
+  // поэтому доверяем заголовку host от прокси. Прокси обязан безопасно
+  // прокидывать реальный внешний host — см. README, раздел про aaPanel.
+  trustHost: true,
   providers: [
     Credentials({
       name: "credentials",
