@@ -126,11 +126,12 @@
     "ingredients": "Ingrediente",
     "description": "Descriere",
     "shortAnswerTitle": "Pe scurt",
-    "shortAnswer": "{name} — {category} din meniul {brand} ({city}), la prețul de {price}. {extra}Se poate comanda online pe site cu livrare prin oraș sau ridicare personală; operatorul sună pentru confirmarea comenzii.",
+    "shortAnswer": "{name} — {category} din meniul {brand} ({city}), preț: {price}. {extra}Se poate comanda online pe site cu livrare prin oraș sau ridicare personală; operatorul sună pentru confirmarea comenzii.",
     "shortAnswerAlcohol": "Produs cu alcool — se vinde doar persoanelor de 18+. ",
     "notFound": "Produsul nu a fost găsit",
     "choose": "Alege",
-    "related": "Poate îți place și"
+    "related": "Poate îți place și",
+    "priceFromValue": "de la {price}"
   },
   "cart": {
     "title": "Coș",

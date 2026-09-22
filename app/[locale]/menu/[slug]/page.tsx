@@ -68,7 +68,9 @@ export default async function ProductPage({ params }: Props) {
       category: product.categoryName.toLowerCase(),
       brand: settings.name,
       city: tMeta("city"),
-      price: `${product.hasVariants ? `${tMenu("priceFrom")} ` : ""}${formatMoney(product.price, locale)}`,
+      price: product.hasVariants
+        ? t("priceFromValue", { price: formatMoney(product.price, locale) })
+        : formatMoney(product.price, locale),
       extra: product.ageRestricted ? t("shortAnswerAlcohol") : "",
     });
 

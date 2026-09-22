@@ -126,11 +126,12 @@
     "ingredients": "Ingredienti",
     "description": "Descrizione",
     "shortAnswerTitle": "In breve",
-    "shortAnswer": "{name} — {category} del menù {brand} ({city}), al prezzo di {price}. {extra}Si può ordinare online con consegna in città o ritiro in sede; un operatore richiama per confermare l'ordine.",
+    "shortAnswer": "{name} — {category} del menù {brand} ({city}), prezzo: {price}. {extra}Si può ordinare online con consegna in città o ritiro in sede; un operatore richiama per confermare l'ordine.",
     "shortAnswerAlcohol": "Prodotto alcolico — venduto solo ai maggiori di 18 anni. ",
     "notFound": "Prodotto non trovato",
     "choose": "Scegli",
-    "related": "Potrebbe piacerti anche"
+    "related": "Potrebbe piacerti anche",
+    "priceFromValue": "a partire da {price}"
   },
   "cart": {
     "title": "Carrello",

@@ -126,11 +126,12 @@
     "ingredients": "Ingredients",
     "description": "Description",
     "shortAnswerTitle": "In short",
-    "shortAnswer": "{name} — {category} on the {brand} menu ({city}), priced at {price}. {extra}It can be ordered online for city delivery or pickup; an operator calls back to confirm the order.",
+    "shortAnswer": "{name} — {category} on the {brand} menu ({city}), price: {price}. {extra}It can be ordered online for city delivery or pickup; an operator calls back to confirm the order.",
     "shortAnswerAlcohol": "Alcoholic product — sold to persons 18+ only. ",
     "notFound": "Product not found",
     "choose": "Choose",
-    "related": "You may also like"
+    "related": "You may also like",
+    "priceFromValue": "from {price}"
   },
   "cart": {
     "title": "Cart",
