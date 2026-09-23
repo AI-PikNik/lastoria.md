@@ -4,14 +4,16 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start -p ${PORT:-3000}",
     "lint": "eslint",
     "test": "vitest run",
+    "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
-    "db:deploy": "prisma migrate deploy",
-    "db:seed": "tsx prisma/seed.ts",
+    "db:deploy": "prisma migrate deploy && prisma generate",
+    "db:seed": "prisma generate && tsx prisma/seed.ts",
     "db:studio": "prisma studio",
+    "server:update": "bash scripts/aapanel-update.sh",
     "postinstall": "prisma generate"
   },
   "dependencies": {

@@ -781,6 +781,13 @@ async function main() {
 main()
   .catch((error) => {
     console.error(error);
+    if (error && typeof error === "object" && "code" in error && (error.code === "P2022" || error.code === "P2021")) {
+      console.error(
+        "\nСтруктура базы и клиент Prisma не совпадают. Выполните по порядку:\n" +
+          "  npx prisma generate\n  npx prisma migrate deploy\n  npm run db:seed\n" +
+          "или всё сразу: bash scripts/aapanel-update.sh (см. README, шаг 6)."
+      );
+    }
     process.exit(1);
   })
   .finally(async () => {
