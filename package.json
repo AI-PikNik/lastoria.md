@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "prisma generate",
     "dev": "next dev",
     "build": "prisma generate && next build",
     "start": "next start -p ${PORT:-3000}",
@@ -13,8 +14,7 @@
     "db:deploy": "prisma migrate deploy && prisma generate",
     "db:seed": "prisma generate && tsx prisma/seed.ts",
     "db:studio": "prisma studio",
-    "server:update": "bash scripts/aapanel-update.sh",
-    "postinstall": "prisma generate"
+    "server:update": "bash scripts/aapanel-update.sh"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1137.0",
