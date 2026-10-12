@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { pickTranslation } from "@/lib/i18n/translate";
 import { invalidateMessagesCache } from "@/lib/i18n/messages";
+import { parseVariants } from "@/lib/variants";
 
 /** Название для админки: русский → румынский → любой заполненный язык */
 export function adminName(rows: { locale: string; name: string }[], fallback = "—"): string {
@@ -39,4 +40,30 @@ export function revalidatePublicSite() {
 export function revalidateTranslations() {
   invalidateMessagesCache();
   revalidatePublicSite();
+}
+
+export interface ProductPickerOption {
+  id: string;
+  name: string;
+  price: number;
+  variants: { key: string; name: string; priceDelta: number }[];
+}
+
+/** Активные товары для добавления в заказ (названия на русском) */
+export async function getProductPickerOptions(): Promise<ProductPickerOption[]> {
+  const rows = await prisma.product.findMany({
+    where: { isActive: true },
+    orderBy: [{ category: { sortOrder: "asc" } }, { sortOrder: "asc" }],
+    include: { translations: true },
+  });
+  return rows.map((p) => ({
+    id: p.id,
+    name: adminName(p.translations, p.slug),
+    price: Number(p.price),
+    variants: parseVariants(p.variants).map((v) => ({
+      key: v.key,
+      name: v.names.ru || v.names.ro || v.key,
+      priceDelta: v.priceDelta,
+    })),
+  }));
 }

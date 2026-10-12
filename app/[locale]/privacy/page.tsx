@@ -14,10 +14,10 @@ export default async function PrivacyPage({ params }: Props) {
   const t = await getTranslations({ locale, namespace: "pages.privacy" });
   return (
     <StaticPage locale={locale} title={t("h1")} path="/privacy">
-      <p>{t("body.p1")}</p>
-      <p>{t("body.p2")}</p>
-      <p>{t("body.p3")}</p>
-      <p>{t("body.p4")}</p>
+      {t("body.p1") && <p>{t("body.p1")}</p>}
+      {t("body.p2") && <p>{t("body.p2")}</p>}
+      {t("body.p3") && <p>{t("body.p3")}</p>}
+      {t("body.p4") && <p>{t("body.p4")}</p>}
     </StaticPage>
   );
 }

@@ -77,7 +77,7 @@ export default async function DeliveryPage({ params }: Props) {
       <h2 className="font-display text-xl font-bold text-primary">{t("pickupTitle")}</h2>
       <p>{t("pickupText", { address: settings.address })}</p>
       <h2 className="font-display text-xl font-bold text-primary">{t("paymentTitle")}</h2>
-      <p>{t("paymentText")}</p>
+      {t("paymentText") && <p>{t("paymentText")}</p>}
     </StaticPage>
   );
 }

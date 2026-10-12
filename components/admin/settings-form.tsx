@@ -31,6 +31,7 @@ export interface SettingsFormValues {
   geoLng: string;
   cookieBannerEnabled: boolean;
   analyticsId: string;
+  copyright: LocalizedValue;
 }
 
 export function SettingsForm({ initial }: { initial: SettingsFormValues }) {
@@ -99,6 +100,20 @@ export function SettingsForm({ initial }: { initial: SettingsFormValues }) {
           multiline
           rows={4}
           maxLength={1500}
+        />
+      </Section>
+
+      <Section
+        title="Подвал: копирайт"
+        description="Строка в самом низу каждой страницы. {year} заменяется текущим годом, {name} — названием ресторана. Пустое поле — стандартный текст «© {year} {name}. Все права защищены.» на языке страницы."
+      >
+        <LocalizedFields
+          id="copyright"
+          label="Текст копирайта"
+          value={v.copyright}
+          onChange={(x) => set("copyright", x)}
+          maxLength={300}
+          placeholder="© {year} {name}. Toate drepturile rezervate."
         />
       </Section>
 

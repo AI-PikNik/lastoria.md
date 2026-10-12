@@ -17,6 +17,7 @@ enum Locale {
   it
 }
 
+/// ADMIN — полный доступ; MANAGER — «Оператор»: только дашборд и заказы
 enum UserRole {
   ADMIN
   MANAGER
@@ -96,6 +97,9 @@ model User {
   name         String
   passwordHash String
   role         UserRole @default(ADMIN)
+  /// Отключённый пользователь не может войти
+  isActive     Boolean  @default(true)
+  lastLoginAt  DateTime?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -364,6 +368,10 @@ model Settings {
   cookieBannerEnabled Boolean  @default(true)
   /// ID Google Analytics (G-XXXX) — грузится только после согласия на cookies
   analyticsId         String?
+  /// Текст копирайта в подвале: { ro, ru, en, it }; {year} и {name} подставляются
+  copyright           Json     @default("{}")
+  /// Отпечаток ADMIN_EMAIL+ADMIN_PASSWORD из .env, который уже применён к базе
+  adminEnvSyncedHash  String?
   updatedAt           DateTime @updatedAt
 
   @@map("settings")

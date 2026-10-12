@@ -68,3 +68,12 @@ describe("словари интерфейса", () => {
     expect(applyFlatOverrides(merged, { "a.c": "admin" })).toEqual({ a: { b: "ru-b", c: "admin" } });
   });
 });
+
+describe("редактор «Тексты страниц»", () => {
+  it("каждое поле ссылается на существующий ключ словаря", async () => {
+    const { PAGE_TEXT_GROUPS } = await import("@/lib/page-texts");
+    const keys = new Set(Object.keys(flattenMessages(ro)));
+    const missing = PAGE_TEXT_GROUPS.flatMap((g) => g.fields.map((f) => f.key)).filter((k) => !keys.has(k));
+    expect(missing).toEqual([]);
+  });
+});

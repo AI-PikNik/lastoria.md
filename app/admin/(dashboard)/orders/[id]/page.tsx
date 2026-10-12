@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { formatMoney, formatDateTime } from "@/lib/format";
+import { formatMoney, formatDateTime, toNumber } from "@/lib/format";
 import {
   FULFILLMENT_LABELS,
   ORDER_STATUS_COLORS,
@@ -10,6 +10,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { OrderActions } from "@/components/admin/order-actions";
+import { OrderEditor } from "@/components/admin/order-editor";
+import { BackButton } from "@/components/admin/back-button";
+import { requireStaff } from "@/lib/auth-guard";
+import { getProductPickerOptions } from "@/lib/admin-data";
 import { LOCALE_LABELS, isLocale } from "@/lib/i18n/locales";
 
 export default async function AdminOrderDetailPage({
@@ -17,12 +21,17 @@ export default async function AdminOrderDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await requireStaff();
   const { id } = await params;
-  const order = await prisma.order.findUnique({
-    where: { id },
-    include: { items: true, events: { orderBy: { createdAt: "asc" } } },
-  });
+  const [order, products] = await Promise.all([
+    prisma.order.findUnique({
+      where: { id },
+      include: { items: true, events: { orderBy: { createdAt: "asc" } } },
+    }),
+    getProductPickerOptions(),
+  ]);
   if (!order) notFound();
+  const editable = order.status !== "COMPLETED" && order.status !== "CANCELLED";
 
   const appliedPromos = Array.isArray(order.appliedPromos)
     ? (order.appliedPromos as unknown as { id: string; name: string; discountAmount: number }[])
@@ -30,6 +39,7 @@ export default async function AdminOrderDetailPage({
 
   return (
     <div className="space-y-6">
+      <BackButton fallback="/admin/orders" label="Назад" />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-display text-2xl font-bold">
@@ -42,7 +52,34 @@ export default async function AdminOrderDetailPage({
         </Badge>
       </div>
 
-      <OrderActions id={order.id} status={order.status} />
+      <div className="flex flex-wrap items-start gap-2">
+        <OrderActions id={order.id} status={order.status} />
+        {editable && (
+          <OrderEditor
+            key={order.updatedAt.toISOString()}
+            products={products}
+            order={{
+              id: order.id,
+              customerName: order.customerName,
+              phone: order.phone,
+              email: order.email ?? "",
+              fulfillment: order.fulfillment,
+              address: order.address ?? "",
+              comment: order.comment ?? "",
+              paymentMethod: order.paymentMethod,
+              deliveryFee: toNumber(order.deliveryFee),
+              items: order.items.map((i) => ({
+                id: i.id,
+                name: i.nameSnapshot,
+                variant: (i.variantSnapshot as { name?: string } | null)?.name ?? null,
+                qty: i.qty,
+                unitPrice: toNumber(i.unitPrice),
+                lineTotal: toNumber(i.lineTotal),
+              })),
+            }}
+          />
+        )}
+      </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
@@ -118,7 +155,9 @@ export default async function AdminOrderDetailPage({
             {order.events.map((event) => (
               <li key={event.id} className="relative text-sm">
                 <span className="absolute -left-[21px] top-1 h-2.5 w-2.5 rounded-full bg-primary" />
-                <p className="font-medium">{ORDER_STATUS_LABELS[event.toStatus]}</p>
+                <p className="font-medium">
+                  {event.fromStatus === event.toStatus ? "Заказ изменён" : ORDER_STATUS_LABELS[event.toStatus]}
+                </p>
                 <p className="text-xs text-muted-foreground">
                   {formatDateTime(event.createdAt)} · {actorLabel(event.actor)}
                   {event.note && ` · ${event.note}`}

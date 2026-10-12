@@ -26,6 +26,8 @@ const DEFAULT_SETTINGS: Omit<Settings, "updatedAt"> = {
   geoLng: null,
   cookieBannerEnabled: true,
   analyticsId: null,
+  copyright: {},
+  adminEnvSyncedHash: null,
 };
 
 /** Сырые настройки из БД (один запрос на рендер благодаря cache). */
@@ -56,6 +58,8 @@ export interface PublicSettings {
   geo: { lat: number; lng: number } | null;
   cookieBannerEnabled: boolean;
   analyticsId: string | null;
+  /** Шаблон копирайта на языке страницы ({year}, {name}); пусто — стандартный */
+  copyright: string;
 }
 
 export const DEFAULT_HERO_IMAGE = "/brand/poster.jpg";
@@ -78,6 +82,7 @@ export const getPublicSettings = cache(async (locale: AppLocale): Promise<Public
     geo: s.geoLat != null && s.geoLng != null ? { lat: s.geoLat, lng: s.geoLng } : null,
     cookieBannerEnabled: s.cookieBannerEnabled,
     analyticsId: s.analyticsId,
+    copyright: pickLocalized(s.copyright, locale),
   };
 });
 
@@ -85,3 +90,5 @@ export const getPublicSettings = cache(async (locale: AppLocale): Promise<Public
 export function telHref(phone: string): string {
   return `tel:${phone.replace(/[^\d+]/g, "")}`;
 }
+
+export { renderCopyright } from "@/lib/settings-format";

@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { cn } from "@/lib/utils";
 import { formatMoney, formatDateTime } from "@/lib/format";
 import {
-  CONFIRMED_STATUSES,
+  ACTIVE_STATUSES,
   FULFILLMENT_LABELS,
   ORDER_STATUS_COLORS,
   ORDER_STATUS_LABELS,
@@ -18,6 +18,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { OrdersFilterBar } from "@/components/admin/orders-filter-bar";
+import { OrderRowLink } from "@/components/admin/order-row-link";
+import { LiveOrders } from "@/components/admin/live-orders";
+import { requireStaff } from "@/lib/auth-guard";
+import { getOrdersStampServer } from "@/lib/orders-data";
 import type { CategoryKind, Prisma } from "@/lib/generated/prisma/client";
 import { getCategoryOptions } from "@/lib/admin-data";
 import { LOCALE_SHORT, isLocale } from "@/lib/i18n/locales";
@@ -38,23 +42,27 @@ interface OrdersSearchParams {
 const TABS: { key: Tab; label: string }[] = [
   { key: "all", label: "Все" },
   { key: "pending", label: "Неподтверждённые" },
-  { key: "confirmed", label: "Подтверждённые" },
+  { key: "confirmed", label: "Подтверждённые (в работе)" },
   { key: "completed", label: "Завершённые" },
   { key: "cancelled", label: "Отменённые" },
 ];
+
+export const metadata = { title: "Заказы" };
 
 export default async function AdminOrdersPage({
   searchParams,
 }: {
   searchParams: Promise<OrdersSearchParams>;
 }) {
+  await requireStaff();
   const params = await searchParams;
   const tab = params.tab ?? "all";
 
   const where: Prisma.OrderWhereInput = {};
 
   if (tab === "pending") where.status = "PENDING_CONFIRMATION";
-  if (tab === "confirmed") where.status = { in: CONFIRMED_STATUSES };
+  // «Подтверждённые» — только те, что ещё в работе; завершённые — на своей вкладке
+  if (tab === "confirmed") where.status = { in: ACTIVE_STATUSES };
   if (tab === "cancelled") where.status = "CANCELLED";
   if (tab === "completed") where.status = "COMPLETED";
 
@@ -107,6 +115,7 @@ export default async function AdminOrdersPage({
     });
   }
 
+  const stamp = await getOrdersStampServer();
   const promos = await prisma.promo.findMany({
     orderBy: { createdAt: "desc" },
     select: { id: true, name: true },
@@ -114,7 +123,10 @@ export default async function AdminOrdersPage({
 
   return (
     <div className="space-y-6">
-      <h1 className="font-display text-2xl font-bold">Заказы</h1>
+      <div className="flex flex-wrap items-end justify-between gap-2">
+        <h1 className="font-display text-2xl font-bold">Заказы</h1>
+        <LiveOrders initialStamp={stamp.stamp} initialPending={stamp.pending} />
+      </div>
 
       <div className="flex gap-2 overflow-x-auto">
         {TABS.map((t) => (
@@ -151,9 +163,11 @@ export default async function AdminOrdersPage({
           </TableHeader>
           <TableBody>
             {filtered.map((order) => (
-              <TableRow key={order.id}>
+              <OrderRowLink key={order.id} href={`/admin/orders/${order.id}`}>
                 <TableCell className="font-mono text-xs">
-                  {order.id.slice(-8).toUpperCase()}
+                  <Link href={`/admin/orders/${order.id}`} className="hover:underline">
+                    {order.id.slice(-8).toUpperCase()}
+                  </Link>
                 </TableCell>
                 <TableCell>{formatDateTime(order.createdAt)}</TableCell>
                 <TableCell>
@@ -173,12 +187,8 @@ export default async function AdminOrdersPage({
                     {ORDER_STATUS_LABELS[order.status]}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-right">
-                  <Link href={`/admin/orders/${order.id}`} className="text-primary hover:underline">
-                    Подробнее
-                  </Link>
-                </TableCell>
-              </TableRow>
+                <TableCell className="text-right text-primary">Открыть →</TableCell>
+              </OrderRowLink>
             ))}
             {filtered.length === 0 && (
               <TableRow>

@@ -48,7 +48,7 @@ export function UiTranslationsTable({
     }
     setValues((prev) => {
       const next = { ...prev, [locale]: { ...prev[locale] } };
-      if (!value.trim() || value === base[locale][key]) delete next[locale][key];
+      if (value === base[locale][key]) delete next[locale][key];
       else next[locale][key] = value;
       return next;
     });

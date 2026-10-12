@@ -244,7 +244,10 @@
     "current": "Current choice",
     "stateAll": "all cookies",
     "stateNecessary": "necessary only",
-    "stateNone": "not made yet"
+    "stateNone": "not made yet",
+    "necessaryHint": "Language, cart and session. No statistics.",
+    "allHint": "Plus anonymous visit statistics.",
+    "saved": "Your choice has been saved"
   },
   "lang": {
     "label": "Language"
@@ -275,7 +278,9 @@
       "h1": "About La Storia",
       "body": {
         "p1": "La Storia is a pizzeria in the traditional Italian style. The menu includes pizza, soft drinks, alcohol for adult guests, snacks, sauces and desserts.",
-        "p2": "Orders are placed online: choose your dishes, check out, and an operator will call you back to confirm. You can choose city delivery or pickup."
+        "p2": "Orders are placed online: choose your dishes, check out, and an operator will call you back to confirm. You can choose city delivery or pickup.",
+        "p3": "Real pizza starts with patience: the dough needs time, the fire is never rushed, and simple ingredients speak the loudest.",
+        "p4": "That is why La Storia cooks the Italian way — tomato sauce, mozzarella, basil and olive oil, baked to a golden crust."
       },
       "faqTitle": "Frequently asked questions"
     },

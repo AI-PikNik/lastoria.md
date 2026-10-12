@@ -14,9 +14,9 @@ export default async function TermsPage({ params }: Props) {
   const t = await getTranslations({ locale, namespace: "pages.terms" });
   return (
     <StaticPage locale={locale} title={t("h1")} path="/terms">
-      <p>{t("body.p1")}</p>
-      <p>{t("body.p2")}</p>
-      <p>{t("body.p3")}</p>
+      {t("body.p1") && <p>{t("body.p1")}</p>}
+      {t("body.p2") && <p>{t("body.p2")}</p>}
+      {t("body.p3") && <p>{t("body.p3")}</p>}
     </StaticPage>
   );
 }

@@ -7,12 +7,12 @@
  * Цены доставки по районам — ПЛЕЙСХОЛДЕРЫ, их нужно поправить в админке.
  */
 import "dotenv/config";
-import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { toNumber } from "@/lib/format";
 import { LOCALES, type AppLocale } from "@/lib/i18n/locales";
 import type { Prisma } from "@/lib/generated/prisma/client";
 import { generatePlaceholder } from "./seed-placeholders";
+import { syncAdminFromEnv } from "@/lib/admin-env-sync";
 
 type L10n = Record<AppLocale, string>;
 
@@ -26,23 +26,30 @@ function fillMap(existing: unknown, defaults: L10n): L10n {
 
 const json = (value: unknown) => value as Prisma.InputJsonValue;
 
+/** Заполнить в строке перевода только пустые (null/"") поля — правки из админки не трогаем */
+async function fillEmpty(
+  model: "categoryTranslation" | "productTranslation",
+  where: Record<string, string>,
+  values: Record<string, string | null>
+) {
+  for (const [field, value] of Object.entries(values)) {
+    if (!value) continue;
+    const filter = { ...where, OR: [{ [field]: null }, { [field]: "" }] };
+    const data = { [field]: value };
+    if (model === "categoryTranslation") {
+      await prisma.categoryTranslation.updateMany({ where: filter as Prisma.CategoryTranslationWhereInput, data });
+    } else {
+      await prisma.productTranslation.updateMany({ where: filter as Prisma.ProductTranslationWhereInput, data });
+    }
+  }
+}
+
 async function main() {
   console.log("Seeding database…");
 
-  /* ─────────── Администратор ─────────── */
-  const adminEmail = process.env.ADMIN_EMAIL ?? "admin@lastoria.md";
-  const adminPassword = process.env.ADMIN_PASSWORD ?? "admin12345";
-  await prisma.user.upsert({
-    where: { email: adminEmail },
-    update: {},
-    create: {
-      email: adminEmail,
-      name: process.env.ADMIN_NAME ?? "Admin",
-      passwordHash: await bcrypt.hash(adminPassword, 10),
-      role: "ADMIN",
-    },
-  });
-  console.log(`Admin user ready: ${adminEmail}`);
+  /* ─────────── Администратор (из .env, см. lib/admin-env-sync.ts) ─────────── */
+  const admin = await syncAdminFromEnv(prisma);
+  console.log(`Admin user: ${admin.email} — ${admin.result}`);
 
   /* ─────────── Настройки ─────────── */
   const hours: L10n = {
@@ -180,6 +187,14 @@ async function main() {
         seoDescription: def.descriptions[locale],
       })),
     });
+    // В уже существующих переводах заполняем только пустые поля
+    for (const locale of LOCALES) {
+      await fillEmpty("categoryTranslation", { categoryId: category.id, locale }, {
+        description: def.descriptions[locale],
+        seoTitle: `${def.names[locale]} — La Storia`,
+        seoDescription: def.descriptions[locale],
+      });
+    }
   }
   console.log("Categories ready");
 
@@ -521,6 +536,16 @@ async function main() {
         imageAlt: def.name[locale],
       })),
     });
+    for (const locale of LOCALES) {
+      await fillEmpty("productTranslation", { productId: product.id, locale }, {
+        shortDescription: def.short[locale],
+        description: def.description[locale],
+        ingredientsText: def.ingredients?.[locale] ?? null,
+        seoTitle: `${def.name[locale]} — La Storia`,
+        seoDescription: def.short[locale],
+        imageAlt: def.name[locale],
+      });
+    }
   }
   console.log(`Products ready: ${Object.keys(products).length}`);
 

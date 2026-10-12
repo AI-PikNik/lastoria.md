@@ -14,9 +14,8 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function AboutPage({ params }: Props) {
   const locale = await resolveLocaleParam(params);
-  const [t, tHome, settings] = await Promise.all([
+  const [t, settings] = await Promise.all([
     getTranslations({ locale, namespace: "pages.about" }),
-    getTranslations({ locale, namespace: "home" }),
     getPublicSettings(locale),
   ]);
   const faq = await getFaqItems(locale, settings);
@@ -27,10 +26,10 @@ export default async function AboutPage({ params }: Props) {
       path="/about"
       after={<Faq title={t("faqTitle")} items={faq} locale={locale} />}
     >
-      <p>{t("body.p1")}</p>
-      <p>{t("body.p2")}</p>
-      <p className="font-accent text-lg italic text-brick">{tHome("story.p1")}</p>
-      <p>{tHome("story.p2")}</p>
+      {t("body.p1") && <p>{t("body.p1")}</p>}
+      {t("body.p2") && <p>{t("body.p2")}</p>}
+      {t("body.p3") && <p className="font-accent text-lg italic text-brick">{t("body.p3")}</p>}
+      {t("body.p4") && <p>{t("body.p4")}</p>}
     </StaticPage>
   );
 }

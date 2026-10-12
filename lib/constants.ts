@@ -67,6 +67,14 @@ export const CONFIRMED_STATUSES: OrderStatus[] = [
 
 export const REVENUE_STATUSES: OrderStatus[] = CONFIRMED_STATUSES;
 
+/** Подтверждённые и ещё не выданные — «в работе» (без завершённых и отменённых) */
+export const ACTIVE_STATUSES: OrderStatus[] = [
+  "CONFIRMED",
+  "PREPARING",
+  "READY_FOR_PICKUP",
+  "OUT_FOR_DELIVERY",
+];
+
 export const MAX_UPLOAD_SIZE_BYTES = 5 * 1024 * 1024;
 export const ALLOWED_UPLOAD_MIME_TYPES = [
   "image/jpeg",

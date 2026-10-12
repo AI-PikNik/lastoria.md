@@ -15,9 +15,9 @@ export default async function CookiesPage({ params }: Props) {
   const t = await getTranslations({ locale, namespace: "pages.cookies" });
   return (
     <StaticPage locale={locale} title={t("h1")} path="/cookies">
-      <p>{t("body.p1")}</p>
-      <p>{t("body.p2")}</p>
-      <p>{t("body.p3")}</p>
+      {t("body.p1") && <p>{t("body.p1")}</p>}
+      {t("body.p2") && <p>{t("body.p2")}</p>}
+      {t("body.p3") && <p>{t("body.p3")}</p>}
       <h2 className="font-display text-xl font-bold text-primary">{t("reset")}</h2>
       <ConsentControls />
     </StaticPage>

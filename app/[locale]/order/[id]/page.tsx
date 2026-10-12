@@ -104,7 +104,10 @@ export default async function OrderStatusPage({ params }: Props) {
 
           <h2 className="mt-6 font-display text-lg font-bold text-primary">{t("history")}</h2>
           <ol className="mt-3 space-y-2 text-sm">
-            {order.events.map((event) => (
+            {order.events
+              // правки состава заказа оператором клиенту в истории статусов не показываем
+              .filter((event) => event.fromStatus !== event.toStatus)
+              .map((event) => (
               <li key={event.id} className="flex justify-between gap-3 text-muted-foreground">
                 <span>{t(`status.${event.toStatus}`)}</span>
                 <time dateTime={event.createdAt.toISOString()}>{formatDateTime(event.createdAt, locale)}</time>

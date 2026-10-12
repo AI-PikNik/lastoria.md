@@ -242,3 +242,8 @@ export async function notifyOrderStatusChange(order: OrderForNotification): Prom
     await trySendEmail(order.email, mail.subject, mail.html, mail.text, "STATUS_CHANGED", order.id);
   }
 }
+
+/** Администратор/оператор изменил состав или данные заказа — сообщение в Telegram */
+export async function notifyOrderEdited(order: OrderForNotification, editor: string): Promise<void> {
+  await trySendTelegram(order, "STATUS_CHANGED", `Заказ изменён (${editor})`);
+}

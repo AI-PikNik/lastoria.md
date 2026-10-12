@@ -13,6 +13,7 @@ import {
   eachDayOfInterval,
 } from "date-fns";
 import { prisma } from "@/lib/prisma";
+import { chisinauToday } from "@/lib/analytics-period";
 import { toNumber } from "@/lib/format";
 import { REVENUE_STATUSES } from "@/lib/constants";
 import { adminName } from "@/lib/admin-data";
@@ -40,7 +41,7 @@ export function resolvePeriod(
   const now = new Date();
   switch (key) {
     case "today":
-      return { from: startOfDay(now), to: endOfDay(now) };
+      return chisinauToday(now);
     case "7d":
       return { from: startOfDay(subDays(now, 6)), to: endOfDay(now) };
     case "30d":

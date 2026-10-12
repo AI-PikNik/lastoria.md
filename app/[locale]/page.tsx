@@ -169,9 +169,9 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         <Plaque className="px-5 py-8 sm:px-10">
           <SectionTitle title={t("storyTitle")} subtitle={t("storySubtitle")} />
           <div className="mx-auto mt-6 max-w-2xl space-y-4 text-center text-foreground/90">
-            <p>{t("story.p1")}</p>
-            <p>{t("story.p2")}</p>
-            <p>{t("story.p3")}</p>
+            {t("story.p1") && <p>{t("story.p1")}</p>}
+            {t("story.p2") && <p>{t("story.p2")}</p>}
+            {t("story.p3") && <p>{t("story.p3")}</p>}
           </div>
         </Plaque>
       </section>

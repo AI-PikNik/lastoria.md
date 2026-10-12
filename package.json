@@ -13,6 +13,7 @@
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy && prisma generate",
     "db:seed": "prisma generate && tsx prisma/seed.ts",
+    "admin:sync": "prisma generate && tsx prisma/sync-admin.ts",
     "db:studio": "prisma studio",
     "server:update": "bash scripts/aapanel-update.sh"
   },

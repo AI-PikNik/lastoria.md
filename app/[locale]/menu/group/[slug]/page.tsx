@@ -10,6 +10,7 @@ import { JsonLd } from "@/components/seo/json-ld";
 import { Breadcrumbs } from "@/components/public/breadcrumbs";
 import { MenuBrowser } from "@/components/public/menu-browser";
 import { SectionTitle } from "@/theme/decor";
+import { AlcoholGuard } from "@/components/age-gate/alcohol-guard";
 
 async function loadGroup(params: PageProps<"/[locale]/menu/group/[slug]">["params"]) {
   const locale = await resolveLocaleParam(params);
@@ -51,7 +52,7 @@ export default async function MenuGroupPage({ params }: PageProps<"/[locale]/men
     getMenuGroups(locale, category),
   ]);
 
-  return (
+  const content = (
     <div className="mx-auto max-w-6xl px-4 pt-5">
       <JsonLd data={menuJsonLd(`${category.name} — ${settings.name}`, locale, menu.ld)} />
       <Breadcrumbs
@@ -77,4 +78,7 @@ export default async function MenuGroupPage({ params }: PageProps<"/[locale]/men
       />
     </div>
   );
+
+  // Группа 18+ (алкоголь): при входе спрашиваем возраст, отказ — назад в меню
+  return category.requiresAgeConfirm || category.kind === "ALCOHOL" ? <AlcoholGuard>{content}</AlcoholGuard> : content;
 }

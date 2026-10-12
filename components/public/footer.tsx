@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { Clock, MapPin, Phone } from "lucide-react";
 import { Link } from "@/i18n/navigation";
-import { telHref, type PublicSettings } from "@/lib/settings";
+import { renderCopyright, telHref, type PublicSettings } from "@/lib/settings";
 import type { AppLocale } from "@/lib/i18n/locales";
 import { CheckeredStrip, FlagMark, OliveBranch, TextLogo } from "@/theme/decor";
 
@@ -79,7 +79,9 @@ export async function Footer({ locale, settings }: { locale: AppLocale; settings
         </div>
         <div className="border-t border-cream/10">
           <p className="mx-auto max-w-6xl px-4 py-4 text-xs text-cream/60">
-            © {new Date().getFullYear()} {settings.name}. {t("rights")}
+            {settings.copyright
+              ? renderCopyright(settings.copyright, settings.name)
+              : `© ${new Date().getFullYear()} ${settings.name}. ${t("rights")}`}
           </p>
         </div>
         <div aria-hidden="true" className="flag-stripe h-1" />

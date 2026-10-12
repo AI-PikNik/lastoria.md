@@ -244,7 +244,10 @@
     "current": "Alegerea curentă",
     "stateAll": "toate cookie-urile",
     "stateNecessary": "doar cele necesare",
-    "stateNone": "nu a fost făcută"
+    "stateNone": "nu a fost făcută",
+    "necessaryHint": "Limba, coșul și sesiunea. Fără statistici.",
+    "allHint": "Plus statistici anonime de vizitare.",
+    "saved": "Alegerea a fost salvată"
   },
   "lang": {
     "label": "Limba"
@@ -275,7 +278,9 @@
       "h1": "Despre La Storia",
       "body": {
         "p1": "La Storia este o pizzerie în stil italian tradițional. Meniul are pizza, băuturi răcoritoare, alcool pentru adulți, gustări, sosuri și deserturi.",
-        "p2": "Comenzile se fac online pe site: alegi produsele, plasezi comanda, iar operatorul te sună pentru confirmare. Poți alege livrarea prin oraș sau ridicarea personală."
+        "p2": "Comenzile se fac online pe site: alegi produsele, plasezi comanda, iar operatorul te sună pentru confirmare. Poți alege livrarea prin oraș sau ridicarea personală.",
+        "p3": "Pizza adevărată începe cu răbdare: aluatul are nevoie de timp, focul nu se grăbește, iar ingredientele simple spun cel mai mult.",
+        "p4": "De aceea La Storia gătește după tradiția italiană — sos de roșii, mozzarella, busuioc și ulei de măsline, coapte până la marginea rumenă."
       },
       "faqTitle": "Întrebări frecvente"
     },

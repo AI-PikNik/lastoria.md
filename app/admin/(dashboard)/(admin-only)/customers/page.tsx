@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatMoney, formatDateTime } from "@/lib/format";
 import { REVENUE_STATUSES } from "@/lib/constants";
@@ -9,6 +10,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+
+export const metadata = { title: "Клиенты" };
 
 export default async function AdminCustomersPage() {
   const orders = await prisma.order.findMany({
@@ -29,6 +32,7 @@ export default async function AdminCustomersPage() {
   >();
 
   for (const order of orders) {
+    if (order.phone.startsWith("deleted-")) continue; // обезличенные заказы
     const entry = byPhone.get(order.phone) ?? {
       name: order.customerName,
       email: order.email,
@@ -52,7 +56,8 @@ export default async function AdminCustomersPage() {
     <div className="space-y-6">
       <h1 className="font-display text-2xl font-bold">Клиенты</h1>
       <p className="text-sm text-muted-foreground">
-        Список формируется автоматически из заказов, отдельная база клиентов не ведётся.
+        Список формируется автоматически из заказов (клиент = номер телефона). Нажмите на клиента, чтобы
+        увидеть его заказы, исправить имя/телефон/email или удалить его персональные данные.
       </p>
 
       <div className="rounded-xl border border-border bg-card">
@@ -70,7 +75,11 @@ export default async function AdminCustomersPage() {
           <TableBody>
             {customers.map((c) => (
               <TableRow key={c.phone}>
-                <TableCell className="font-medium">{c.name}</TableCell>
+                <TableCell className="font-medium">
+                  <Link href={`/admin/customers/${encodeURIComponent(c.phone)}`} className="text-primary hover:underline">
+                    {c.name}
+                  </Link>
+                </TableCell>
                 <TableCell>{c.phone}</TableCell>
                 <TableCell className="text-muted-foreground">{c.email ?? "—"}</TableCell>
                 <TableCell className="text-right">{c.ordersCount}</TableCell>

@@ -36,6 +36,7 @@ export async function updateSettings(raw: unknown): Promise<ActionResult> {
     geoLng: d.geoLng ?? null,
     cookieBannerEnabled: d.cookieBannerEnabled,
     analyticsId: d.analyticsId || null,
+    copyright: json(d.copyright),
   };
   await prisma.settings.upsert({ where: { id: "main" }, update: data, create: { id: "main", ...data } });
 

@@ -206,6 +206,7 @@ export const settingsSchema = z.object({
   geoLat: z.coerce.number().min(-90).max(90).nullable().optional(),
   geoLng: z.coerce.number().min(-180).max(180).nullable().optional(),
   cookieBannerEnabled: z.boolean().default(true),
+  copyright: localizedTextSchema(300),
   analyticsId: z
     .string()
     .trim()
@@ -270,3 +271,64 @@ export function flattenZodError(error: z.ZodError): Record<string, string> {
   }
   return result;
 }
+
+/* ─────────────── Сотрудники ─────────────── */
+
+export const staffRoleSchema = z.enum(["ADMIN", "MANAGER"]);
+
+export const userCreateSchema = z.object({
+  name: z.string().trim().min(2, "Имя — минимум 2 символа").max(100),
+  email: z.string().trim().toLowerCase().email("Неверный email"),
+  role: staffRoleSchema,
+  password: z.string().min(8, "Пароль — минимум 8 символов").max(200),
+});
+
+export const userUpdateSchema = z.object({
+  name: z.string().trim().min(2, "Имя — минимум 2 символа").max(100),
+  email: z.string().trim().toLowerCase().email("Неверный email"),
+  role: staffRoleSchema,
+  isActive: z.boolean(),
+  /** Пусто — пароль не меняется */
+  password: z.union([z.literal(""), z.string().min(8, "Пароль — минимум 8 символов").max(200)]).default(""),
+});
+
+/* ─────────────── Редактирование заказа (админка) ─────────────── */
+
+export const orderEditSchema = z.object({
+  customerName: z.string().trim().min(2, "Имя — минимум 2 символа").max(200),
+  phone: z
+    .string()
+    .trim()
+    .refine(isValidMoldovanPhone, "Телефон: +373XXXXXXXX или 0XXXXXXXX")
+    .transform((value) => normalizeMoldovanPhone(value)!),
+  email: z.string().trim().email("Неверный email").optional().or(z.literal("")),
+  fulfillment: fulfillmentSchema,
+  address: z.string().trim().max(500).optional().or(z.literal("")),
+  comment: z.string().trim().max(1000).optional().or(z.literal("")),
+  paymentMethod: paymentMethodSchema,
+  deliveryFee: z.coerce.number().min(0).max(100000),
+  note: z.string().trim().max(500).optional().or(z.literal("")),
+  items: z
+    .array(
+      z.object({
+        id: z.string().optional().nullable(),
+        productId: z.string().optional().nullable(),
+        variantKey: z.string().max(40).optional().nullable(),
+        qty: z.coerce.number().int().min(1).max(50),
+      })
+    )
+    .min(1, "В заказе должна остаться хотя бы одна позиция")
+    .max(50),
+});
+
+/* ─────────────── Клиенты (админка) ─────────────── */
+
+export const customerEditSchema = z.object({
+  customerName: z.string().trim().min(2, "Имя — минимум 2 символа").max(200),
+  phone: z
+    .string()
+    .trim()
+    .refine(isValidMoldovanPhone, "Телефон: +373XXXXXXXX или 0XXXXXXXX")
+    .transform((value) => normalizeMoldovanPhone(value)!),
+  email: z.string().trim().email("Неверный email").optional().or(z.literal("")),
+});

@@ -244,7 +244,10 @@
     "current": "Scelta attuale",
     "stateAll": "tutti i cookie",
     "stateNecessary": "solo necessari",
-    "stateNone": "non ancora fatta"
+    "stateNone": "non ancora fatta",
+    "necessaryHint": "Lingua, carrello e sessione. Nessuna statistica.",
+    "allHint": "In più statistiche anonime delle visite.",
+    "saved": "Scelta salvata"
   },
   "lang": {
     "label": "Lingua"
@@ -275,7 +278,9 @@
       "h1": "Chi è La Storia",
       "body": {
         "p1": "La Storia è una pizzeria in stile tradizionale italiano. Nel menù ci sono pizze, bevande analcoliche, alcolici per ospiti maggiorenni, snack, salse e dolci.",
-        "p2": "Gli ordini si fanno online: scegli i piatti, completa l'ordine e un operatore ti richiamerà per la conferma. Puoi scegliere la consegna in città o il ritiro in sede."
+        "p2": "Gli ordini si fanno online: scegli i piatti, completa l'ordine e un operatore ti richiamerà per la conferma. Puoi scegliere la consegna in città o il ritiro in sede.",
+        "p3": "La vera pizza nasce dalla pazienza: l'impasto ha bisogno di tempo, il fuoco non si affretta e gli ingredienti semplici parlano più forte.",
+        "p4": "Per questo La Storia cucina secondo la tradizione italiana — salsa di pomodoro, mozzarella, basilico e olio d'oliva, cotti fino al cornicione dorato."
       },
       "faqTitle": "Domande frequenti"
     },
