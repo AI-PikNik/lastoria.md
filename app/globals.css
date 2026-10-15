@@ -1,4 +1,15 @@
-@import "tailwindcss";
+/*
+ * Tailwind подключён по частям: тема и сброс стилей — в слоях, а служебные
+ * классы (bg-primary, border-2…) — ВНЕ слоя. Стиль вне слоя всегда сильнее
+ * любого слоя, поэтому чужое правило вида «button { color: … }» (расширения
+ * браузера, антивирусы в Chrome/Edge) иначе перекрашивало наши кнопки,
+ * чекбоксы и переключатели. Вне слоя побеждает более точный селектор —
+ * наш класс сильнее селектора по тегу.
+ */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+@import "tailwindcss/utilities.css";
 /* Тема сайта: цвета и декор редактируются в папке theme/, а не здесь */
 @import "../theme/tokens.css";
 @import "../theme/decor.css";
@@ -96,6 +107,18 @@
       scroll-behavior: auto !important;
     }
   }
+}
+
+/*
+ * Защита кнопок без своих цветовых классов (переключатель языка, иконки):
+ * вне слоя и точнее, чем чужое «button { … }», но слабее любого класса
+ * Tailwind — поэтому bg-primary, border-2 и т. п. продолжают работать.
+ */
+html button {
+  color: inherit;
+  background-color: transparent;
+  border-width: 0;
+  border-style: solid;
 }
 
 @keyframes sheet-in-right {

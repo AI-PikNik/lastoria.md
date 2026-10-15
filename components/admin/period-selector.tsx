@@ -49,10 +49,10 @@ export function PeriodSelector({ current }: { current: PeriodKey }) {
           key={option.key}
           onClick={() => select(option.key)}
           className={cn(
-            "rounded-full border px-3 py-1.5 text-sm font-medium",
+            "rounded-full border-2 px-3 py-1.5 text-sm font-semibold transition-colors",
             current === option.key
               ? "border-primary bg-primary text-primary-foreground"
-              : "border-border bg-card hover:bg-secondary"
+              : "border-border-strong bg-card hover:border-primary hover:bg-surface"
           )}
         >
           {option.label}

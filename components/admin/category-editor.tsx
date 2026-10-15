@@ -157,7 +157,7 @@ export function CategoryEditor({ category, trigger }: { category?: CategoryEdito
             value={imageUrl}
             onChange={setImageUrl}
             folder="categories"
-            label="Картинка группы — показывается на главной в блоке «Что мы готовим» (квадратная или 4:3; без картинки — иконка)"
+            label="Картинка группы — маленький значок слева от названия на главной (квадратная; без картинки — иконка по типу группы)"
           />
 
           <div className="flex flex-col gap-3 rounded-lg border border-border p-3">

@@ -1,19 +1,13 @@
 import "server-only";
-import {
-  startOfDay,
-  endOfDay,
-  startOfMonth,
-  endOfMonth,
-  subMonths,
-  subDays,
-  startOfYear,
-  endOfYear,
-  format,
-  startOfWeek,
-  eachDayOfInterval,
-} from "date-fns";
 import { prisma } from "@/lib/prisma";
-import { chisinauToday } from "@/lib/analytics-period";
+import {
+  bucketKey,
+  buildBuckets,
+  chisinauDays,
+  chisinauToday,
+  chisinauWall,
+  type Granularity,
+} from "@/lib/analytics-period";
 import { toNumber } from "@/lib/format";
 import { REVENUE_STATUSES } from "@/lib/constants";
 import { adminName } from "@/lib/admin-data";
@@ -33,33 +27,40 @@ export interface PeriodRange {
   to: Date;
 }
 
+/** Границы периода — по календарю Кишинёва, независимо от часового пояса сервера */
 export function resolvePeriod(
   key: PeriodKey,
   customFrom?: string | null,
-  customTo?: string | null
+  customTo?: string | null,
+  now: Date = new Date()
 ): PeriodRange {
-  const now = new Date();
+  const wall = chisinauWall(now);
+  const y = wall.getUTCFullYear();
+  const m = wall.getUTCMonth();
+  const d = wall.getUTCDate();
+  const parse = (value?: string | null): [number, number, number] | null => {
+    const match = value?.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    return match ? [Number(match[1]), Number(match[2]) - 1, Number(match[3])] : null;
+  };
   switch (key) {
     case "today":
       return chisinauToday(now);
     case "7d":
-      return { from: startOfDay(subDays(now, 6)), to: endOfDay(now) };
+      return chisinauDays([y, m, d - 6], [y, m, d + 1]);
     case "30d":
-      return { from: startOfDay(subDays(now, 29)), to: endOfDay(now) };
-    case "last_month": {
-      const lastMonth = subMonths(now, 1);
-      return { from: startOfMonth(lastMonth), to: endOfMonth(lastMonth) };
-    }
+      return chisinauDays([y, m, d - 29], [y, m, d + 1]);
+    case "last_month":
+      return chisinauDays([y, m - 1, 1], [y, m, 1]);
     case "this_year":
-      return { from: startOfYear(now), to: endOfYear(now) };
-    case "custom":
-      return {
-        from: customFrom ? startOfDay(new Date(customFrom)) : startOfMonth(now),
-        to: customTo ? endOfDay(new Date(customTo)) : endOfDay(now),
-      };
+      return chisinauDays([y, 0, 1], [y + 1, 0, 1]);
+    case "custom": {
+      const from = parse(customFrom) ?? [y, m, 1];
+      const to = parse(customTo) ?? [y, m, d];
+      return chisinauDays(from, [to[0], to[1], to[2] + 1]);
+    }
     case "this_month":
     default:
-      return { from: startOfMonth(now), to: endOfMonth(now) };
+      return chisinauDays([y, m, 1], [y, m + 1, 1]);
   }
 }
 
@@ -110,16 +111,15 @@ export async function getSummary(range: PeriodRange): Promise<DashboardSummary> 
 }
 
 export interface SalesPoint {
-  date: string;
+  key: string;
   label: string;
   revenue: number;
   ordersCount: number;
+  /** Средний чек в корзине (0, если заказов не было) */
+  avgCheck: number;
 }
 
-export async function getSalesOverTime(
-  range: PeriodRange,
-  granularity: "day" | "week" | "month"
-): Promise<SalesPoint[]> {
+export async function getSalesOverTime(range: PeriodRange, granularity: Granularity): Promise<SalesPoint[]> {
   const orders = await prisma.order.findMany({
     where: {
       createdAt: { gte: range.from, lte: range.to },
@@ -128,33 +128,93 @@ export async function getSalesOverTime(
     select: { createdAt: true, total: true },
   });
 
-  const bucketKey = (date: Date): string => {
-    if (granularity === "month") return format(date, "yyyy-MM");
-    if (granularity === "week") return format(startOfWeek(date, { weekStartsOn: 1 }), "yyyy-MM-dd");
-    return format(date, "yyyy-MM-dd");
-  };
-
   const buckets = new Map<string, { revenue: number; ordersCount: number }>();
   for (const order of orders) {
-    const key = bucketKey(order.createdAt);
+    const key = bucketKey(order.createdAt, granularity);
     const current = buckets.get(key) ?? { revenue: 0, ordersCount: 0 };
     current.revenue += toNumber(order.total);
     current.ordersCount += 1;
     buckets.set(key, current);
   }
 
-  if (granularity === "day") {
-    const days = eachDayOfInterval({ start: range.from, end: range.to });
-    return days.map((day) => {
-      const key = format(day, "yyyy-MM-dd");
-      const bucket = buckets.get(key) ?? { revenue: 0, ordersCount: 0 };
-      return { date: key, label: format(day, "dd.MM"), ...bucket };
-    });
+  return buildBuckets(range, granularity).map(({ key, label }) => {
+    const b = buckets.get(key) ?? { revenue: 0, ordersCount: 0 };
+    return { key, label, ...b, avgCheck: b.ordersCount > 0 ? Math.round(b.revenue / b.ordersCount) : 0 };
+  });
+}
+
+export interface ProductOption {
+  id: string;
+  name: string;
+  group: string;
+}
+
+/** Все товары для выбора на графике «Товар во времени» */
+export async function getProductOptions(): Promise<ProductOption[]> {
+  const rows = await prisma.product.findMany({
+    include: { translations: true, category: { include: { translations: true } } },
+  });
+  return rows
+    .map((p) => ({
+      id: p.id,
+      name: adminName(p.translations, p.slug),
+      group: adminName(p.category.translations, p.category.slug),
+    }))
+    .sort((a, b) => a.group.localeCompare(b.group, "ru") || a.name.localeCompare(b.name, "ru"));
+}
+
+export interface ProductTrend {
+  /** Выбранные товары с итогами за период */
+  products: { id: string; name: string; qty: number; revenue: number }[];
+  /** Точки графика: q:<id> — штук, r:<id> — выручка */
+  points: ({ key: string; label: string } & Record<string, number | string>)[];
+}
+
+/** Продажи выбранных товаров во времени (штуки и выручка по корзинам) */
+export async function getProductTrend(
+  range: PeriodRange,
+  granularity: Granularity,
+  products: { id: string; name: string }[]
+): Promise<ProductTrend> {
+  const ids = products.map((p) => p.id);
+  const items = ids.length
+    ? await prisma.orderItem.findMany({
+        where: {
+          productId: { in: ids },
+          order: { createdAt: { gte: range.from, lte: range.to }, status: { in: REVENUE_STATUSES } },
+        },
+        select: { productId: true, qty: true, lineTotal: true, order: { select: { createdAt: true } } },
+      })
+    : [];
+
+  const cells = new Map<string, { qty: number; revenue: number }>();
+  const totals = new Map<string, { qty: number; revenue: number }>();
+  for (const item of items) {
+    if (!item.productId) continue;
+    const revenue = toNumber(item.lineTotal);
+    const cellKey = `${bucketKey(item.order.createdAt, granularity)}|${item.productId}`;
+    const cell = cells.get(cellKey) ?? { qty: 0, revenue: 0 };
+    cell.qty += item.qty;
+    cell.revenue += revenue;
+    cells.set(cellKey, cell);
+    const total = totals.get(item.productId) ?? { qty: 0, revenue: 0 };
+    total.qty += item.qty;
+    total.revenue += revenue;
+    totals.set(item.productId, total);
   }
 
-  return Array.from(buckets.entries())
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([key, value]) => ({ date: key, label: key, ...value }));
+  return {
+    products: products.map((p) => ({ ...p, ...(totals.get(p.id) ?? { qty: 0, revenue: 0 }) })),
+    points: buildBuckets(range, granularity).map(({ key, label }) => {
+      const point: { key: string; label: string } & Record<string, number | string> = { key, label };
+      for (const id of ids) {
+        const cell = cells.get(`${key}|${id}`);
+        point[`q:${id}`] = cell?.qty ?? 0;
+        point[`r:${id}`] = cell?.revenue ?? 0;
+      }
+      return point;
+    }),
+  };
 }
 
 export interface TypeBreakdown {

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   resolvePeriod,
   getSummary,
@@ -5,13 +6,23 @@ import {
   getBreakdown,
   getTopProducts,
   getPromoEffectiveness,
+  getProductOptions,
+  getProductTrend,
   type PeriodKey,
 } from "@/lib/analytics";
+import {
+  availableGranularities,
+  defaultGranularity,
+  MAX_TREND_PRODUCTS,
+  type Granularity,
+} from "@/lib/analytics-period";
 import { formatMoney } from "@/lib/format";
 import { CATEGORY_KIND_LABELS } from "@/lib/constants";
 import { StatCard } from "@/components/admin/stat-card";
 import { PeriodSelector } from "@/components/admin/period-selector";
 import { SalesChart } from "@/components/admin/charts/sales-chart";
+import { ProductTrendChart } from "@/components/admin/charts/product-trend";
+import { GranularityToggle } from "@/components/admin/analytics-controls";
 import { BreakdownChart } from "@/components/admin/charts/breakdown-chart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -27,6 +38,10 @@ interface AnalyticsSearchParams {
   period?: PeriodKey;
   dateFrom?: string;
   dateTo?: string;
+  /** Шаг графиков: hour | day | week | month */
+  group?: string;
+  /** Товары на графике «Товар во времени» через запятую; none — ни одного */
+  products?: string;
 }
 
 export default async function AdminAnalyticsPage({
@@ -38,16 +53,41 @@ export default async function AdminAnalyticsPage({
   const period = params.period ?? "this_month";
   const range = resolvePeriod(period, params.dateFrom, params.dateTo);
 
-  const granularity =
-    period === "today" ? "day" : period === "this_year" ? "month" : "day";
+  const available = availableGranularities(range);
+  const granularity: Granularity = available.includes(params.group as Granularity)
+    ? (params.group as Granularity)
+    : defaultGranularity(range);
 
-  const [summary, sales, breakdown, topProducts, promoEffectiveness] = await Promise.all([
+  const [summary, sales, breakdown, topProducts, promoEffectiveness, productOptions] = await Promise.all([
     getSummary(range),
     getSalesOverTime(range, granularity),
     getBreakdown(range),
     getTopProducts(range),
     getPromoEffectiveness(range),
+    getProductOptions(),
   ]);
+
+  // Товары для графика: из адреса, а если не выбраны — самый продаваемый за период
+  const optionById = new Map(productOptions.map((o) => [o.id, o]));
+  const requested =
+    params.products === undefined
+      ? topProducts.byRevenue.slice(0, 1).map((p) => p.productId)
+      : params.products.split(",");
+  const trendProducts = [...new Set(requested)]
+    .map((id) => optionById.get(id))
+    .filter((o) => o !== undefined)
+    .slice(0, MAX_TREND_PRODUCTS);
+  const trend = await getProductTrend(range, granularity, trendProducts);
+
+  /** Ссылка «показать товар на графике» с сохранением остальных параметров */
+  const trendHref = (productId: string) => {
+    const ids = trendProducts.map((p) => p.id).filter((id) => id !== productId);
+    const next = [...ids, productId].slice(-MAX_TREND_PRODUCTS);
+    const query = new URLSearchParams();
+    for (const [key, value] of Object.entries(params)) if (typeof value === "string") query.set(key, value);
+    query.set("products", next.join(","));
+    return `/admin/analytics?${query.toString()}#product-trend`;
+  };
 
   const ratio =
     summary.confirmedCount + summary.pendingCount > 0
@@ -69,10 +109,27 @@ export default async function AdminAnalyticsPage({
         <StatCard title="Подтверждено, %" value={`${ratio}%`} />
       </div>
 
+      <div className="flex flex-wrap items-center gap-3">
+        <span className="text-sm font-medium text-muted-foreground">Шаг графиков:</span>
+        <GranularityToggle current={granularity} available={available} />
+      </div>
+
       <Card>
         <CardHeader><CardTitle>Продажи во времени</CardTitle></CardHeader>
         <CardContent>
           <SalesChart data={sales} />
+        </CardContent>
+      </Card>
+
+      <Card id="product-trend" className="scroll-mt-20">
+        <CardHeader>
+          <CardTitle>Товар во времени</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Сравните до {MAX_TREND_PRODUCTS} товаров: сколько штук продано и на какую сумму в каждый период.
+          </p>
+        </CardHeader>
+        <CardContent>
+          <ProductTrendChart options={productOptions} trend={trend} />
         </CardContent>
       </Card>
 
@@ -100,7 +157,7 @@ export default async function AdminAnalyticsPage({
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
-          <CardHeader><CardTitle>Топ товаров по выручке</CardTitle></CardHeader>
+          <CardHeader><CardTitle>Топ товаров по выручке</CardTitle><p className="text-sm text-muted-foreground">Нажмите на товар — он появится на графике</p></CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
@@ -109,7 +166,19 @@ export default async function AdminAnalyticsPage({
               <TableBody>
                 {topProducts.byRevenue.map((p) => (
                   <TableRow key={p.productId}>
-                    <TableCell>{p.name}</TableCell>
+                    <TableCell>
+                      {optionById.has(p.productId) ? (
+                        <Link
+                          href={trendHref(p.productId)}
+                          className="font-medium text-primary underline-offset-4 hover:underline"
+                          title="Показать на графике «Товар во времени»"
+                        >
+                          {p.name} ↗
+                        </Link>
+                      ) : (
+                        p.name
+                      )}
+                    </TableCell>
                     <TableCell className="text-right">{formatMoney(p.revenue, "admin")}</TableCell>
                   </TableRow>
                 ))}
@@ -118,7 +187,7 @@ export default async function AdminAnalyticsPage({
           </CardContent>
         </Card>
         <Card>
-          <CardHeader><CardTitle>Топ товаров по количеству</CardTitle></CardHeader>
+          <CardHeader><CardTitle>Топ товаров по количеству</CardTitle><p className="text-sm text-muted-foreground">Нажмите на товар — он появится на графике</p></CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
@@ -127,7 +196,19 @@ export default async function AdminAnalyticsPage({
               <TableBody>
                 {topProducts.byQty.map((p) => (
                   <TableRow key={p.productId}>
-                    <TableCell>{p.name}</TableCell>
+                    <TableCell>
+                      {optionById.has(p.productId) ? (
+                        <Link
+                          href={trendHref(p.productId)}
+                          className="font-medium text-primary underline-offset-4 hover:underline"
+                          title="Показать на графике «Товар во времени»"
+                        >
+                          {p.name} ↗
+                        </Link>
+                      ) : (
+                        p.name
+                      )}
+                    </TableCell>
                     <TableCell className="text-right">{p.qty}</TableCell>
                   </TableRow>
                 ))}

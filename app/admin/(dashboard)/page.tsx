@@ -6,7 +6,6 @@ import { getOrdersStampServer } from "@/lib/orders-data";
 import { formatMoney, formatDateTime } from "@/lib/format";
 import { ACTIVE_STATUSES, FULFILLMENT_LABELS, ORDER_STATUS_COLORS, ORDER_STATUS_LABELS } from "@/lib/constants";
 import { StatCard } from "@/components/admin/stat-card";
-import { OrderActions } from "@/components/admin/order-actions";
 import { LiveOrders } from "@/components/admin/live-orders";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -103,32 +102,32 @@ function OrderColumn({
       ) : (
         <ul className="divide-y divide-border">
           {orders.map((order) => (
-            <li key={order.id} className="space-y-3 p-4">
-              {/* Карточка не ссылка целиком: заказ открывается кнопкой «Открыть»,
-                  кнопки статуса работают прямо здесь */}
-              <div className="flex items-start justify-between gap-3">
+            <li key={order.id}>
+              {/* Весь заказ — ссылка: подтверждение, смена статуса и отмена
+                  делаются только внутри заказа */}
+              <Link
+                href={`/admin/orders/${order.id}`}
+                className="group flex items-start justify-between gap-3 p-4 transition-colors hover:bg-surface"
+              >
                 <div className="min-w-0">
-                  <Link href={`/admin/orders/${order.id}`} className="font-semibold hover:text-primary hover:underline">
+                  <p className="font-semibold group-hover:text-primary group-hover:underline">
                     №{order.id.slice(-8).toUpperCase()} · {order.customerName}
-                  </Link>
+                  </p>
                   <p className="text-sm text-muted-foreground">
                     {formatDateTime(order.createdAt)} · {FULFILLMENT_LABELS[order.fulfillment]}
                     {order.deliveryZoneName ? ` · ${order.deliveryZoneName}` : ""} · {order.phone}
                   </p>
-                </div>
-                <div className="flex shrink-0 flex-col items-end gap-1">
-                  <span className="text-lg font-bold">{formatMoney(order.total, "admin")}</span>
-                  <Badge variant="outline" className={ORDER_STATUS_COLORS[order.status]}>
+                  <Badge variant="outline" className={`mt-2 ${ORDER_STATUS_COLORS[order.status]}`}>
                     {ORDER_STATUS_LABELS[order.status]}
                   </Badge>
                 </div>
-              </div>
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <OrderActions id={order.id} status={order.status} compact />
-                <Link href={`/admin/orders/${order.id}`} className={buttonVariants({ variant: "outline" })}>
-                  Открыть <ChevronRight aria-hidden="true" />
-                </Link>
-              </div>
+                <div className="flex shrink-0 flex-col items-end gap-2">
+                  <span className="text-lg font-bold">{formatMoney(order.total, "admin")}</span>
+                  <span className={buttonVariants({ variant: "outline", size: "sm" })}>
+                    Открыть <ChevronRight aria-hidden="true" />
+                  </span>
+                </div>
+              </Link>
             </li>
           ))}
         </ul>
