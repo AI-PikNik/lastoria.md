@@ -30,6 +30,7 @@ export interface SettingsFormValues {
   geoLat: string;
   geoLng: string;
   cookieBannerEnabled: boolean;
+  ageGateOnEnter: boolean;
   analyticsId: string;
   copyright: LocalizedValue;
 }
@@ -122,6 +123,19 @@ export function SettingsForm({ initial }: { initial: SettingsFormValues }) {
           <Text label="Telegram chat ID (пусто — из .env)" value={v.telegramChatId} onChange={(x) => set("telegramChatId", x)} placeholder="-1001234567890" />
           <Text label="Email отправителя писем" value={v.emailSenderAddress} onChange={(x) => set("emailSenderAddress", x)} error={errors.emailSenderAddress} />
         </div>
+      </Section>
+
+      <Section
+        title="Алкоголь 18+"
+        description="При оформлении заказа с алкоголем покупатель всегда отмечает «Мне есть 18 лет» (без этого заказ не создаётся), а оператор видит пометку 18+ в заказе."
+      >
+        <label className="flex items-center justify-between gap-3 rounded-lg border border-border p-3 text-sm">
+          <span>
+            <span className="font-medium">Дополнительно спрашивать возраст при входе в раздел «Алкоголь»</span>
+            <span className="block text-xs text-muted-foreground">Окно «Вам есть 18 лет?» на страницах группы и товаров 18+</span>
+          </span>
+          <Switch checked={v.ageGateOnEnter} onCheckedChange={(x) => set("ageGateOnEnter", x)} />
+        </label>
       </Section>
 
       <Section title="Cookies и аналитика" description="Аналитика подключается только после того, как посетитель нажал «Принять» в cookie-баннере.">

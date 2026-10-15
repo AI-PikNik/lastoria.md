@@ -40,6 +40,7 @@ export async function createCategory(raw: unknown): Promise<ActionResult> {
       kind: parsed.data.kind,
       requiresAgeConfirm: parsed.data.kind === "ALCOHOL" ? true : parsed.data.requiresAgeConfirm,
       isActive: parsed.data.isActive,
+      showOnHome: parsed.data.showOnHome,
       imageUrl: parsed.data.imageUrl || null,
       sortOrder: (last._max.sortOrder ?? 0) + 1,
       translations: { create: translationRows(parsed.data) },
@@ -65,6 +66,7 @@ export async function updateCategory(id: string, raw: unknown): Promise<ActionRe
         kind: parsed.data.kind,
         requiresAgeConfirm: parsed.data.kind === "ALCOHOL" ? true : parsed.data.requiresAgeConfirm,
         isActive: parsed.data.isActive,
+        showOnHome: parsed.data.showOnHome,
         imageUrl: parsed.data.imageUrl || null,
       },
     }),
@@ -81,6 +83,12 @@ export async function updateCategory(id: string, raw: unknown): Promise<ActionRe
     ),
   ]);
   return { ...done(), id };
+}
+
+export async function setCategoryOnHome(id: string, showOnHome: boolean): Promise<ActionResult> {
+  await requireAdminSession();
+  await prisma.category.update({ where: { id }, data: { showOnHome } });
+  return done();
 }
 
 export async function setCategoryActive(id: string, isActive: boolean): Promise<ActionResult> {

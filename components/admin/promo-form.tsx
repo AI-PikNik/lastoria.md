@@ -19,6 +19,7 @@ import { createPromo, updatePromo } from "@/lib/actions/promos";
 import { CATEGORY_KIND_LABELS } from "@/lib/constants";
 import { LocalizedFields } from "./localized-fields";
 import { toLocalized } from "@/lib/admin-forms";
+import { DateTimeField } from "./date-time-field";
 
 interface Option {
   id: string;
@@ -39,10 +40,6 @@ interface PromoData {
   endsAt: string;
   isActive: boolean;
   stackable: boolean;
-}
-
-function toDateTimeLocal(value: string) {
-  return value.slice(0, 16);
 }
 
 export function PromoForm({
@@ -188,28 +185,9 @@ export function PromoForm({
           <Input id="minOrderAmount" name="minOrderAmount" type="number" step="0.01" defaultValue={promo?.minOrderAmount ?? ""} />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="startsAt">Начало действия</Label>
-            <Input
-              id="startsAt"
-              name="startsAt"
-              type="datetime-local"
-              defaultValue={promo ? toDateTimeLocal(promo.startsAt) : ""}
-              required
-            />
-          </div>
-          <div>
-            <Label htmlFor="endsAt">Окончание действия</Label>
-            <Input
-              id="endsAt"
-              name="endsAt"
-              type="datetime-local"
-              defaultValue={promo ? toDateTimeLocal(promo.endsAt) : ""}
-              required
-            />
-            {errors.endsAt && <p className="mt-1 text-xs text-destructive">{errors.endsAt}</p>}
-          </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <DateTimeField name="startsAt" label="Начало действия" defaultValue={promo?.startsAt} presets="start" error={errors.startsAt} />
+          <DateTimeField name="endsAt" label="Окончание действия" defaultValue={promo?.endsAt} presets="end" error={errors.endsAt} />
         </div>
 
         <div className="flex items-center justify-between">

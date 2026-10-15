@@ -22,6 +22,7 @@ export default async function AdminCategoriesPage() {
       slug: c.slug,
       kind: c.kind,
       isActive: c.isActive,
+      showOnHome: c.showOnHome,
       isSystem: c.isSystem,
       requiresAgeConfirm: c.requiresAgeConfirm,
       imageUrl: c.imageUrl,

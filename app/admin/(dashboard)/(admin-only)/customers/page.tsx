@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { Pencil } from "lucide-react";
+import { buttonVariants } from "@/components/ui/button";
 import { prisma } from "@/lib/prisma";
 import { formatMoney, formatDateTime } from "@/lib/format";
 import { REVENUE_STATUSES } from "@/lib/constants";
@@ -70,6 +72,7 @@ export default async function AdminCustomersPage() {
               <TableHead className="text-right">Заказов</TableHead>
               <TableHead className="text-right">Сумма покупок</TableHead>
               <TableHead>Последний заказ</TableHead>
+              <TableHead className="text-right">Действия</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -85,6 +88,14 @@ export default async function AdminCustomersPage() {
                 <TableCell className="text-right">{c.ordersCount}</TableCell>
                 <TableCell className="text-right">{formatMoney(c.totalSpent, "admin")}</TableCell>
                 <TableCell>{formatDateTime(c.lastOrderAt)}</TableCell>
+                <TableCell className="text-right">
+                  <Link
+                    href={`/admin/customers/${encodeURIComponent(c.phone)}`}
+                    className={buttonVariants({ variant: "outline", size: "sm" })}
+                  >
+                    <Pencil aria-hidden="true" /> Открыть / изменить
+                  </Link>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>

@@ -129,7 +129,7 @@ export function OrderEditor({ order, products }: { order: EditableOrder; product
                 {!line.id && <span className="ml-2 rounded bg-success/15 px-1.5 text-xs text-success">новая</span>}
                 <span className="block text-xs text-muted-foreground">{money(line.unitPrice)} / шт.</span>
               </span>
-              <div className="flex items-center rounded-md border border-border">
+              <div className="flex items-center rounded-md border-2 border-border-strong bg-white">
                 <button type="button" className="p-2 hover:bg-muted disabled:opacity-40" disabled={line.qty <= 1} aria-label="Меньше"
                   onClick={() => setLines((p) => p.map((l, i) => (i === index ? { ...l, qty: l.qty - 1 } : l)))}>
                   <Minus className="size-4" />

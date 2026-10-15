@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Bike, Store } from "lucide-react";
+import { Bike, Check, Store } from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
 import { useCart } from "@/components/cart/cart-context";
 import { usePricedCart } from "@/components/cart/use-priced-cart";
@@ -290,7 +290,12 @@ export function CheckoutForm({
         )}
 
         {data?.requiresAgeConfirm && (
-          <div className="rounded-lg border border-charcoal/30 bg-card p-3">
+          <div
+            className={cn(
+              "rounded-lg border-2 p-3",
+              errors.ageConfirmed ? "border-destructive bg-destructive/5" : ageConfirmed ? "border-success bg-success/10" : "border-charcoal bg-highlight/30"
+            )}
+          >
             <label htmlFor="field-ageConfirmed" className="flex min-h-11 cursor-pointer items-start gap-3">
               <Checkbox
                 id="field-ageConfirmed"
@@ -374,6 +379,8 @@ function Choice({
   label: string;
   icon?: React.ReactNode;
 }) {
+  // Видимый «кружок» выбора + толстая рамка: выбранный вариант понятен
+  // в любом браузере и на любом мониторе
   return (
     <button
       type="button"
@@ -382,12 +389,23 @@ function Choice({
       disabled={disabled}
       onClick={onSelect}
       className={cn(
-        "flex min-h-12 items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold transition-colors disabled:opacity-40 [&_svg]:size-5",
-        selected ? "border-primary bg-primary text-primary-foreground" : "border-border-strong bg-background hover:bg-surface"
+        "flex min-h-14 items-center gap-3 rounded-lg border-2 px-3 py-2 text-left text-[0.95rem] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40 [&_svg]:size-5",
+        selected
+          ? "border-primary bg-primary text-primary-foreground shadow-md"
+          : "border-[#a8916c] bg-white text-foreground hover:border-primary hover:bg-surface"
       )}
     >
+      <span
+        aria-hidden="true"
+        className={cn(
+          "flex size-6 shrink-0 items-center justify-center rounded-full border-2",
+          selected ? "border-primary-foreground bg-primary-foreground text-primary" : "border-[#6b5d50] bg-white"
+        )}
+      >
+        {selected && <Check className="size-4" strokeWidth={3} />}
+      </span>
       {icon}
-      {label}
+      <span>{label}</span>
     </button>
   );
 }

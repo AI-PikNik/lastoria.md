@@ -113,6 +113,7 @@ export const categorySchema = z
     kind: categoryKindSchema.default("CUSTOM"),
     requiresAgeConfirm: z.boolean().default(false),
     isActive: z.boolean().default(true),
+    showOnHome: z.boolean().default(true),
     imageUrl: z.string().max(500).nullable().optional(),
     translations: z.object({
       ro: categoryTranslationSchema,
@@ -206,6 +207,7 @@ export const settingsSchema = z.object({
   geoLat: z.coerce.number().min(-90).max(90).nullable().optional(),
   geoLng: z.coerce.number().min(-180).max(180).nullable().optional(),
   cookieBannerEnabled: z.boolean().default(true),
+  ageGateOnEnter: z.boolean().default(false),
   copyright: localizedTextSchema(300),
   analyticsId: z
     .string()

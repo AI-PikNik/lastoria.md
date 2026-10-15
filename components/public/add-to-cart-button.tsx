@@ -6,13 +6,13 @@ import { toast } from "sonner";
 import { Check, Plus } from "lucide-react";
 import { Button, type ButtonProps } from "@/components/ui/button";
 import { useCart } from "@/components/cart/cart-context";
-import { useAgeGate } from "@/components/age-gate/age-gate-context";
 import { useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
 interface AddToCartButtonProps {
   productId: string;
   name: string;
+  /** Товар 18+ (сейчас не влияет на добавление — возраст подтверждается в чекауте) */
   ageRestricted: boolean;
   variantKey?: string | null;
   qty?: number;
@@ -25,7 +25,6 @@ interface AddToCartButtonProps {
 export function AddToCartButton({
   productId,
   name,
-  ageRestricted,
   variantKey,
   qty = 1,
   className,
@@ -36,8 +35,6 @@ export function AddToCartButton({
   const tCart = useTranslations("cart");
   const router = useRouter();
   const { addItem } = useCart();
-  const { requestConfirmation } = useAgeGate();
-  const [pending, setPending] = React.useState(false);
   const [justAdded, setJustAdded] = React.useState(false);
 
   React.useEffect(() => {
@@ -46,13 +43,9 @@ export function AddToCartButton({
     return () => window.clearTimeout(timer);
   }, [justAdded]);
 
-  const handleClick = async () => {
-    if (ageRestricted) {
-      setPending(true);
-      const ok = await requestConfirmation();
-      setPending(false);
-      if (!ok) return;
-    }
+  // Возраст 18+ подтверждается при оформлении заказа (галочка в чекауте,
+  // проверка на сервере) — при добавлении в корзину окно не показываем.
+  const handleClick = () => {
     addItem({ productId, variantKey: variantKey ?? null, qty });
     setJustAdded(true);
     toast.success(t("added", { name }), {
@@ -66,7 +59,6 @@ export function AddToCartButton({
       size={size}
       className={cn("shrink-0", className)}
       onClick={handleClick}
-      disabled={pending}
       aria-label={`${t("addToCartFull")}: ${name}`}
     >
       {justAdded ? <Check aria-hidden="true" /> : <Plus aria-hidden="true" />}

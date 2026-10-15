@@ -96,8 +96,9 @@
   --muted-foreground: #5f5850;
   --accent: #b85a32;
   --border: #e2dfda;
-  --border-strong: #cfc9c0;
-  --input: #d6d1ca;
+  /* рамки полей и кнопок — заметные на любом мониторе */
+  --border-strong: #9e958a;
+  --input: #b3aba1;
   --radius: 0.5rem;
   --elev-card: 0 1px 2px rgba(0, 0, 0, 0.06);
   --elev-lift: 0 4px 12px rgba(0, 0, 0, 0.08);

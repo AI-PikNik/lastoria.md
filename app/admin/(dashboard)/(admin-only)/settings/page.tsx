@@ -71,6 +71,7 @@ export default async function AdminSettingsPage() {
           geoLat: settings.geoLat != null ? String(settings.geoLat) : "",
           geoLng: settings.geoLng != null ? String(settings.geoLng) : "",
           cookieBannerEnabled: settings.cookieBannerEnabled,
+          ageGateOnEnter: settings.ageGateOnEnter,
           analyticsId: settings.analyticsId ?? "",
           copyright: toLocalized(settings.copyright),
         }}

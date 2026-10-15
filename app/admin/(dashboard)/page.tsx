@@ -9,6 +9,8 @@ import { StatCard } from "@/components/admin/stat-card";
 import { OrderActions } from "@/components/admin/order-actions";
 import { LiveOrders } from "@/components/admin/live-orders";
 import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
+import { ChevronRight } from "lucide-react";
 import type { Order } from "@/lib/generated/prisma/client";
 
 export const metadata = { title: "Дашборд" };
@@ -101,25 +103,32 @@ function OrderColumn({
       ) : (
         <ul className="divide-y divide-border">
           {orders.map((order) => (
-            <li key={order.id} className="space-y-2 p-4">
-              <Link href={`/admin/orders/${order.id}`} className="flex items-start justify-between gap-3 hover:text-primary">
-                <div>
-                  <p className="font-medium">
+            <li key={order.id} className="space-y-3 p-4">
+              {/* Карточка не ссылка целиком: заказ открывается кнопкой «Открыть»,
+                  кнопки статуса работают прямо здесь */}
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <Link href={`/admin/orders/${order.id}`} className="font-semibold hover:text-primary hover:underline">
                     №{order.id.slice(-8).toUpperCase()} · {order.customerName}
-                  </p>
+                  </Link>
                   <p className="text-sm text-muted-foreground">
                     {formatDateTime(order.createdAt)} · {FULFILLMENT_LABELS[order.fulfillment]}
                     {order.deliveryZoneName ? ` · ${order.deliveryZoneName}` : ""} · {order.phone}
                   </p>
                 </div>
                 <div className="flex shrink-0 flex-col items-end gap-1">
-                  <span className="font-semibold">{formatMoney(order.total, "admin")}</span>
+                  <span className="text-lg font-bold">{formatMoney(order.total, "admin")}</span>
                   <Badge variant="outline" className={ORDER_STATUS_COLORS[order.status]}>
                     {ORDER_STATUS_LABELS[order.status]}
                   </Badge>
                 </div>
-              </Link>
-              <OrderActions id={order.id} status={order.status} compact />
+              </div>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <OrderActions id={order.id} status={order.status} compact />
+                <Link href={`/admin/orders/${order.id}`} className={buttonVariants({ variant: "outline" })}>
+                  Открыть <ChevronRight aria-hidden="true" />
+                </Link>
+              </div>
             </li>
           ))}
         </ul>

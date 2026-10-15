@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Trash2 } from "lucide-react";
+import { Pencil, Save, Trash2, X } from "lucide-react";
 import { deleteCustomer, updateCustomer } from "@/lib/actions/customers";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +18,7 @@ export function CustomerForm({
   activeOrders: number;
 }) {
   const router = useRouter();
+  const [editing, setEditing] = React.useState(false);
   const [form, setForm] = React.useState(initial);
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [pending, setPending] = React.useState(false);
@@ -33,6 +34,7 @@ export function CustomerForm({
       return;
     }
     toast.success("Данные клиента обновлены во всех его заказах");
+    setEditing(false);
     if (result.phone && result.phone !== phone) router.replace(`/admin/customers/${encodeURIComponent(result.phone)}`);
     else router.refresh();
   };
@@ -53,13 +55,46 @@ export function CustomerForm({
     router.push("/admin/customers");
   };
 
+  if (!editing) {
+    return (
+      <section className="space-y-4 rounded-xl border border-border bg-card p-5">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="font-semibold">Данные клиента</h2>
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={() => setEditing(true)}>
+              <Pencil aria-hidden="true" /> Изменить данные
+            </Button>
+            <Button
+              variant="danger"
+              onClick={remove}
+              disabled={activeOrders > 0}
+              title={activeOrders > 0 ? "Сначала завершите или отмените заказы клиента" : undefined}
+            >
+              <Trash2 aria-hidden="true" /> Удалить клиента
+            </Button>
+          </div>
+        </div>
+        <dl className="grid gap-3 sm:grid-cols-3">
+          <Item label="Имя" value={initial.customerName} />
+          <Item label="Телефон" value={initial.phone} />
+          <Item label="Email" value={initial.email || "—"} />
+        </dl>
+        {activeOrders > 0 && (
+          <p className="text-xs text-muted-foreground">
+            Удалить клиента можно после завершения или отмены его заказов (сейчас в работе: {activeOrders}).
+          </p>
+        )}
+      </section>
+    );
+  }
+
   return (
-    <form onSubmit={save} className="space-y-4 rounded-xl border border-border bg-card p-5">
-      <h2 className="font-semibold">Данные клиента</h2>
+    <form onSubmit={save} className="space-y-4 rounded-xl border-2 border-primary/50 bg-card p-5">
+      <h2 className="font-semibold">Изменение данных клиента</h2>
       <div className="grid gap-3 md:grid-cols-3">
         <label className="block space-y-1 text-sm font-medium">
           Имя
-          <Input value={form.customerName} onChange={(e) => setForm({ ...form, customerName: e.target.value })} />
+          <Input value={form.customerName} onChange={(e) => setForm({ ...form, customerName: e.target.value })} autoFocus />
           {errors.customerName && <span className="block text-xs text-destructive">{errors.customerName}</span>}
         </label>
         <label className="block space-y-1 text-sm font-medium">
@@ -74,21 +109,31 @@ export function CustomerForm({
         </label>
       </div>
       <p className="text-xs text-muted-foreground">Изменения применяются ко всем заказам этого клиента.</p>
-      <div className="flex flex-wrap justify-between gap-2">
+      <div className="flex flex-wrap gap-2">
         <Button type="submit" disabled={pending}>
-          {pending ? "Сохранение…" : "Сохранить"}
+          <Save aria-hidden="true" /> {pending ? "Сохранение…" : "Сохранить"}
         </Button>
         <Button
           type="button"
-          variant="ghost"
-          className="text-destructive"
-          onClick={remove}
-          disabled={activeOrders > 0}
-          title={activeOrders > 0 ? "Есть незавершённые заказы" : undefined}
+          variant="outline"
+          onClick={() => {
+            setForm(initial);
+            setErrors({});
+            setEditing(false);
+          }}
         >
-          <Trash2 /> Удалить данные клиента
+          <X aria-hidden="true" /> Отмена
         </Button>
       </div>
     </form>
+  );
+}
+
+function Item({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg bg-muted/60 px-3 py-2">
+      <dt className="text-xs text-muted-foreground">{label}</dt>
+      <dd className="font-medium">{value}</dd>
+    </div>
   );
 }

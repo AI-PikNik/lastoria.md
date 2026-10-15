@@ -80,5 +80,7 @@ export default async function MenuGroupPage({ params }: PageProps<"/[locale]/men
   );
 
   // Группа 18+ (алкоголь): при входе спрашиваем возраст, отказ — назад в меню
-  return category.requiresAgeConfirm || category.kind === "ALCOHOL" ? <AlcoholGuard>{content}</AlcoholGuard> : content;
+  // (если включено в Настройках → Алкоголь 18+)
+  const ageRestricted = category.requiresAgeConfirm || category.kind === "ALCOHOL";
+  return ageRestricted && settings.ageGateOnEnter ? <AlcoholGuard>{content}</AlcoholGuard> : content;
 }

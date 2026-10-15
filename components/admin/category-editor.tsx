@@ -25,6 +25,7 @@ export interface CategoryEditorData {
   slug: string;
   kind: Kind;
   isActive: boolean;
+  showOnHome: boolean;
   isSystem: boolean;
   requiresAgeConfirm: boolean;
   imageUrl: string | null;
@@ -40,6 +41,7 @@ export function CategoryEditor({ category, trigger }: { category?: CategoryEdito
   const [slug, setSlug] = React.useState(category?.slug ?? "");
   const [kind, setKind] = React.useState<Kind>(category?.kind ?? "CUSTOM");
   const [isActive, setIsActive] = React.useState(category?.isActive ?? true);
+  const [showOnHome, setShowOnHome] = React.useState(category?.showOnHome ?? true);
   const [age, setAge] = React.useState(category?.requiresAgeConfirm ?? false);
   const [imageUrl, setImageUrl] = React.useState<string | null>(category?.imageUrl ?? null);
   const [tr, setTr] = React.useState<Record<AppLocale, Tr>>(
@@ -53,7 +55,7 @@ export function CategoryEditor({ category, trigger }: { category?: CategoryEdito
 
   const submit = async () => {
     setPending(true);
-    const payload = { slug, kind, isActive, requiresAgeConfirm: age, imageUrl, translations: tr };
+    const payload = { slug, kind, isActive, showOnHome, requiresAgeConfirm: age, imageUrl, translations: tr };
     const result = category ? await updateCategory(category.id, payload) : await createCategory(payload);
     setPending(false);
     if (!result.ok) {
@@ -151,7 +153,12 @@ export function CategoryEditor({ category, trigger }: { category?: CategoryEdito
             </label>
           </div>
 
-          <ImageUploadField value={imageUrl} onChange={setImageUrl} folder="categories" label="Картинка группы (необязательно)" />
+          <ImageUploadField
+            value={imageUrl}
+            onChange={setImageUrl}
+            folder="categories"
+            label="Картинка группы — показывается на главной в блоке «Что мы готовим» (квадратная или 4:3; без картинки — иконка)"
+          />
 
           <div className="flex flex-col gap-3 rounded-lg border border-border p-3">
             <label className="flex items-center justify-between gap-3 text-sm">
@@ -160,6 +167,13 @@ export function CategoryEditor({ category, trigger }: { category?: CategoryEdito
                 <span className="block text-xs text-muted-foreground">Скрытая группа и её товары не видны покупателям</span>
               </span>
               <Switch checked={isActive} onCheckedChange={setIsActive} />
+            </label>
+            <label className="flex items-center justify-between gap-3 text-sm">
+              <span>
+                <span className="font-medium">Показывать на главной</span>
+                <span className="block text-xs text-muted-foreground">Плитка группы в блоке «Что мы готовим». В меню группа видна всегда, если включена выше</span>
+              </span>
+              <Switch checked={showOnHome} onCheckedChange={setShowOnHome} />
             </label>
             <label className="flex items-center justify-between gap-3 text-sm">
               <span>

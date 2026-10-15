@@ -116,6 +116,8 @@ model Category {
   isSystem           Boolean               @default(false)
   kind               CategoryKind          @default(CUSTOM)
   requiresAgeConfirm Boolean               @default(false)
+  /// Показывать группу в блоке «Что мы готовим» на главной
+  showOnHome         Boolean               @default(true)
   imageUrl           String?
   translations       CategoryTranslation[]
   products           Product[]
@@ -366,6 +368,8 @@ model Settings {
   geoLat              Float?
   geoLng              Float?
   cookieBannerEnabled Boolean  @default(true)
+  /// Окно «Вам есть 18?» при входе в раздел/товар 18+ (подтверждение при оформлении заказа — всегда)
+  ageGateOnEnter      Boolean  @default(false)
   /// ID Google Analytics (G-XXXX) — грузится только после согласия на cookies
   analyticsId         String?
   /// Текст копирайта в подвале: { ro, ru, en, it }; {year} и {name} подставляются

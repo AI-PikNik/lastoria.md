@@ -15,6 +15,7 @@ export interface CategoryView {
   slug: string;
   kind: CategoryKind;
   requiresAgeConfirm: boolean;
+  showOnHome: boolean;
   imageUrl: string | null;
   name: string;
   description: string;
@@ -45,6 +46,7 @@ export const getCategories = cache(async (locale: AppLocale): Promise<CategoryVi
         slug: c.slug,
         kind: c.kind,
         requiresAgeConfirm: c.requiresAgeConfirm,
+        showOnHome: c.showOnHome,
         imageUrl: c.imageUrl,
         name: values.name || c.slug,
         description: values.description,

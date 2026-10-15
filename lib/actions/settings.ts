@@ -35,6 +35,7 @@ export async function updateSettings(raw: unknown): Promise<ActionResult> {
     geoLat: d.geoLat ?? null,
     geoLng: d.geoLng ?? null,
     cookieBannerEnabled: d.cookieBannerEnabled,
+    ageGateOnEnter: d.ageGateOnEnter,
     analyticsId: d.analyticsId || null,
     copyright: json(d.copyright),
   };

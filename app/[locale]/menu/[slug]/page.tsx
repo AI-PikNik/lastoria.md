@@ -160,5 +160,7 @@ export default async function ProductPage({ params }: Props) {
     </div>
   );
 
-  return product.ageRestricted ? <AlcoholGuard>{content}</AlcoholGuard> : content;
+  // Окно 18+ при входе на страницу — только если включено в Настройках; при
+  // оформлении заказа возраст подтверждается всегда (галочка + проверка на сервере)
+  return product.ageRestricted && settings.ageGateOnEnter ? <AlcoholGuard>{content}</AlcoholGuard> : content;
 }

@@ -11,6 +11,7 @@ import { buildMetadata, organizationJsonLd, restaurantJsonLd } from "@/lib/seo";
 import { JsonLd } from "@/components/seo/json-ld";
 import { ProductCard } from "@/components/public/product-card";
 import { ShortAnswer } from "@/components/public/short-answer";
+import { GroupTile } from "@/components/public/group-tile";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Flourish, OliveBranch, Plaque, SectionTitle } from "@/theme/decor";
@@ -38,6 +39,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
     getTranslations({ locale, namespace: "home" }),
     getTranslations({ locale, namespace: "meta" }),
   ]);
+  const homeGroups = categories.filter((c) => c.showOnHome);
   const promoProducts = (await getProductCards(locale)).filter((p) => p.hasDiscount).slice(0, 4);
   const minOrder = formatMoney(settings.minOrderAmount, locale);
   const hours = settings.hours || "—";
@@ -111,24 +113,14 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         <ShortAnswer title={t("shortAnswerTitle")} text={shortAnswer} />
       </section>
 
-      {/* ── Группы меню ── */}
-      {categories.length > 0 && (
+      {/* ── Группы меню (какие показывать — Админка → Группы → «На главной») ── */}
+      {homeGroups.length > 0 && (
         <section className="mx-auto max-w-6xl px-4 pt-14">
           <SectionTitle title={t("groupsTitle")} subtitle={t("groupsSubtitle")} />
-          <ul className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-            {categories.map((category) => (
+          <ul className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
+            {homeGroups.map((category) => (
               <li key={category.id}>
-                <Link
-                  href={`/menu/group/${category.slug}`}
-                  className="group flex h-full min-h-24 flex-col justify-end overflow-hidden rounded-xl bg-card p-4 shadow-card gold-frame hover:shadow-lift"
-                >
-                  <span className="font-display text-lg font-bold text-primary group-hover:underline">
-                    {category.name}
-                  </span>
-                  {category.requiresAgeConfirm && (
-                    <span className="mt-1 w-fit rounded-full bg-charcoal px-2 text-xs font-semibold text-cream">18+</span>
-                  )}
-                </Link>
+                <GroupTile category={category} />
               </li>
             ))}
           </ul>

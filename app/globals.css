@@ -57,37 +57,44 @@
   --font-accent: var(--ff-accent), Georgia, serif;
 }
 
-html {
-  -webkit-text-size-adjust: 100%;
-}
+/*
+ * Базовые правила — в слое base: иначе (вне слоя) они важнее служебных
+ * классов Tailwind. Например, «* { border-color }» вне слоя перекрашивал
+ * ВСЕ рамки (border-primary, border-destructive…) в бледно-бежевый.
+ */
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-}
+  body {
+    background: var(--background);
+    color: var(--foreground);
+  }
 
-* {
-  border-color: var(--border);
-}
+  * {
+    border-color: var(--border);
+  }
 
-h1,
-h2,
-h3 {
-  text-wrap: balance;
-}
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
 
-:focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: 2px;
-}
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
 
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }
 

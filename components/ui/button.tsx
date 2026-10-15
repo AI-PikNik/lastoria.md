@@ -11,7 +11,11 @@ export const buttonVariants = cva(
         default: "bg-primary text-primary-foreground shadow-sm hover:bg-primary-hover",
         secondary: "bg-secondary text-secondary-foreground hover:opacity-90",
         outline:
-          "border border-border-strong bg-card/60 text-foreground hover:bg-surface",
+          "border-2 border-border-strong bg-card text-foreground shadow-sm hover:border-primary hover:bg-surface",
+        // Подтверждение / успешное действие
+        success: "bg-[#2f7d36] text-white shadow-sm hover:bg-[#256a2c]",
+        // Опасное действие, но не основное (отмена заказа)
+        danger: "border-2 border-destructive bg-white text-destructive shadow-sm hover:bg-destructive hover:text-white",
         ghost: "text-foreground hover:bg-surface",
         destructive: "bg-destructive text-destructive-foreground hover:opacity-90",
         link: "text-primary underline-offset-4 hover:underline",

@@ -25,6 +25,7 @@ const DEFAULT_SETTINGS: Omit<Settings, "updatedAt"> = {
   geoLat: null,
   geoLng: null,
   cookieBannerEnabled: true,
+  ageGateOnEnter: false,
   analyticsId: null,
   copyright: {},
   adminEnvSyncedHash: null,
@@ -57,6 +58,8 @@ export interface PublicSettings {
   heroImageUrl: string | null;
   geo: { lat: number; lng: number } | null;
   cookieBannerEnabled: boolean;
+  /** Окно 18+ при входе в раздел/товар с алкоголем */
+  ageGateOnEnter: boolean;
   analyticsId: string | null;
   /** Шаблон копирайта на языке страницы ({year}, {name}); пусто — стандартный */
   copyright: string;
@@ -81,6 +84,7 @@ export const getPublicSettings = cache(async (locale: AppLocale): Promise<Public
     heroImageUrl: s.heroImageUrl,
     geo: s.geoLat != null && s.geoLng != null ? { lat: s.geoLat, lng: s.geoLng } : null,
     cookieBannerEnabled: s.cookieBannerEnabled,
+    ageGateOnEnter: s.ageGateOnEnter,
     analyticsId: s.analyticsId,
     copyright: pickLocalized(s.copyright, locale),
   };

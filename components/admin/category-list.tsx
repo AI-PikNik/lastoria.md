@@ -5,7 +5,8 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Eye, EyeOff, Pencil, Trash2 } from "lucide-react";
-import { deleteCategory, reorderCategories, setCategoryActive } from "@/lib/actions/categories";
+import { deleteCategory, reorderCategories, setCategoryActive, setCategoryOnHome } from "@/lib/actions/categories";
+import { Switch } from "@/components/ui/switch";
 import { CATEGORY_KIND_LABELS } from "@/lib/constants";
 import type { AppLocale } from "@/lib/i18n/locales";
 import { Badge } from "@/components/ui/badge";
@@ -71,6 +72,7 @@ export function CategoryList({ categories }: { categories: CategoryRow[] }) {
               {category.name}
               {!category.isActive && <Badge variant="outline">скрыта</Badge>}
               {category.isSystem && <Badge variant="secondary">стартовая</Badge>}
+              {category.showOnHome && category.isActive && <Badge variant="success">на главной</Badge>}
               {category.requiresAgeConfirm && <Badge variant="dark">18+</Badge>}
             </p>
             <p className="text-xs text-muted-foreground">
@@ -84,6 +86,18 @@ export function CategoryList({ categories }: { categories: CategoryRow[] }) {
               </div>
             )}
           </div>
+          <label className="flex items-center gap-2 text-xs font-medium" title="Показывать плитку группы на главной странице">
+            <Switch
+              checked={category.showOnHome}
+              onCheckedChange={async (value) => {
+                const result = await setCategoryOnHome(category.id, value);
+                if (!result.ok) toast.error(result.error);
+                else toast.success(value ? "Группа показана на главной" : "Группа убрана с главной");
+                router.refresh();
+              }}
+            />
+            На главной
+          </label>
           <div className="flex gap-1">
             <Button
               type="button"
