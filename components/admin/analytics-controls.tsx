@@ -12,11 +12,12 @@ export function useSetParams() {
   const searchParams = useSearchParams();
   const [pending, startTransition] = React.useTransition();
   const set = React.useCallback(
-    (patch: Record<string, string | null>) => {
+    (patch: Record<string, string | string[] | null>) => {
       const params = new URLSearchParams(searchParams.toString());
       for (const [key, value] of Object.entries(patch)) {
-        if (value === null || value === "") params.delete(key);
-        else params.set(key, value);
+        params.delete(key);
+        if (Array.isArray(value)) value.forEach((v) => params.append(key, v));
+        else if (value !== null && value !== "") params.set(key, value);
       }
       startTransition(() => router.push(`${pathname}?${params.toString()}`, { scroll: false }));
     },

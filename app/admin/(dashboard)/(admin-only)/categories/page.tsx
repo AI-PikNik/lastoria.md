@@ -21,6 +21,7 @@ export default async function AdminCategoriesPage() {
       id: c.id,
       slug: c.slug,
       kind: c.kind,
+      analyticsLabel: c.analyticsLabel ?? "",
       isActive: c.isActive,
       showOnHome: c.showOnHome,
       isSystem: c.isSystem,
@@ -46,6 +47,9 @@ export default async function AdminCategoriesPage() {
     };
   });
 
+  // Уже придуманные свои группы — подсказки в поле «Своя группа для аналитики»
+  const labelSuggestions = [...new Set(rows.map((c) => c.analyticsLabel).filter((l): l is string => !!l))].sort();
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -56,6 +60,7 @@ export default async function AdminCategoriesPage() {
           </p>
         </div>
         <CategoryEditor
+          labelSuggestions={labelSuggestions}
           trigger={
             <Button>
               <Plus /> Новая группа
@@ -63,7 +68,7 @@ export default async function AdminCategoriesPage() {
           }
         />
       </div>
-      <CategoryList categories={categories} />
+      <CategoryList categories={categories} labelSuggestions={labelSuggestions} />
       <p className="text-xs text-muted-foreground">
         Стартовые группы и группы с товарами удалить нельзя — их можно скрыть. Пустую свою группу можно удалить.
       </p>

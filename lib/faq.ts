@@ -1,18 +1,39 @@
 import "server-only";
-import { getTranslations } from "next-intl/server";
+import { cache } from "react";
+import { prisma } from "@/lib/prisma";
 import { formatMoney } from "@/lib/format";
+import { pickLocalized } from "@/lib/i18n/translate";
 import type { AppLocale } from "@/lib/i18n/locales";
 import type { PublicSettings } from "@/lib/settings";
 
-const FAQ_KEYS = ["q1", "q2", "q3", "q4", "q5", "q6", "q7"] as const;
+const loadFaq = cache(async () => {
+  try {
+    return await prisma.faqItem.findMany({
+      where: { isActive: true },
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+    });
+  } catch {
+    // БД недоступна (сборка без базы) — без вопросов
+    return [];
+  }
+});
 
-/** FAQ на языке страницы; ответы подставляют реальные данные из настроек */
+/** Подстановка {min}, {address}, {hours} из настроек */
+export function fillFaqPlaceholders(text: string, values: Record<string, string>): string {
+  return text.replace(/\{(min|address|hours)\}/g, (_, key: string) => values[key] ?? "");
+}
+
+/** Вопросы-ответы на языке страницы (Админка → Вопросы и ответы); скрытые не показываются */
 export async function getFaqItems(locale: AppLocale, settings: PublicSettings) {
-  const t = await getTranslations({ locale, namespace: "pages.faq" });
   const values = {
     min: formatMoney(settings.minOrderAmount, locale),
     address: settings.address,
     hours: settings.hours || "—",
   };
-  return FAQ_KEYS.map((key) => ({ q: t(`${key}.q`), a: t(`${key}.a`, values) }));
+  return (await loadFaq())
+    .map((item) => ({
+      q: fillFaqPlaceholders(pickLocalized(item.question, locale), values),
+      a: fillFaqPlaceholders(pickLocalized(item.answer, locale), values),
+    }))
+    .filter((item) => item.q && item.a);
 }

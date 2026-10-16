@@ -7,6 +7,7 @@ import { formatMoney, formatDateTime } from "@/lib/format";
 import { ACTIVE_STATUSES, FULFILLMENT_LABELS, ORDER_STATUS_COLORS, ORDER_STATUS_LABELS } from "@/lib/constants";
 import { StatCard } from "@/components/admin/stat-card";
 import { LiveOrders } from "@/components/admin/live-orders";
+import { OrderActions } from "@/components/admin/order-actions";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { ChevronRight } from "lucide-react";
@@ -65,6 +66,7 @@ export default async function AdminDashboardPage() {
           emptyText="Подтверждённых заказов в работе нет."
           orders={activeOrders}
           href="/admin/orders?tab=confirmed"
+          withActions
         />
       </div>
     </div>
@@ -77,12 +79,15 @@ function OrderColumn({
   orders,
   href,
   accent,
+  withActions,
 }: {
   title: string;
   emptyText: string;
   orders: Order[];
   href: string;
   accent?: boolean;
+  /** Кнопки смены статуса прямо в карточке (колонка «В работе») */
+  withActions?: boolean;
 }) {
   return (
     <section className="rounded-xl border border-border bg-card">
@@ -103,11 +108,12 @@ function OrderColumn({
         <ul className="divide-y divide-border">
           {orders.map((order) => (
             <li key={order.id}>
-              {/* Весь заказ — ссылка: подтверждение, смена статуса и отмена
-                  делаются только внутри заказа */}
+              {/* Ожидающие подтверждаются только внутри заказа (карточка — ссылка);
+                  у заказов «В работе» статус меняется прямо здесь */}
               <Link
                 href={`/admin/orders/${order.id}`}
-                className="group flex items-start justify-between gap-3 p-4 transition-colors hover:bg-surface"
+                className="group flex items-start justify-between gap-3 px-4 pt-4 transition-colors hover:bg-surface data-[last=true]:pb-4"
+                data-last={!withActions}
               >
                 <div className="min-w-0">
                   <p className="font-semibold group-hover:text-primary group-hover:underline">
@@ -128,6 +134,11 @@ function OrderColumn({
                   </span>
                 </div>
               </Link>
+              {withActions && (
+                <div className="px-4 pb-4 pt-3">
+                  <OrderActions id={order.id} status={order.status} size="default" />
+                </div>
+              )}
             </li>
           ))}
         </ul>

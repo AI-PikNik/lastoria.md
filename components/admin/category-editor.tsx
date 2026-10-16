@@ -24,6 +24,8 @@ export interface CategoryEditorData {
   id: string;
   slug: string;
   kind: Kind;
+  /** Своя группа для аналитики (kind = CUSTOM) */
+  analyticsLabel: string;
   isActive: boolean;
   showOnHome: boolean;
   isSystem: boolean;
@@ -34,12 +36,22 @@ export interface CategoryEditorData {
 
 const EMPTY_TR: Tr = { name: "", description: "", seoTitle: "", seoDescription: "" };
 
-export function CategoryEditor({ category, trigger }: { category?: CategoryEditorData; trigger: React.ReactNode }) {
+export function CategoryEditor({
+  category,
+  trigger,
+  labelSuggestions = [],
+}: {
+  category?: CategoryEditorData;
+  trigger: React.ReactNode;
+  /** Названия своих групп, уже заданные в других группах */
+  labelSuggestions?: string[];
+}) {
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
   const [lang, setLang] = React.useState<AppLocale>("ro");
   const [slug, setSlug] = React.useState(category?.slug ?? "");
   const [kind, setKind] = React.useState<Kind>(category?.kind ?? "CUSTOM");
+  const [analyticsLabel, setAnalyticsLabel] = React.useState(category?.analyticsLabel ?? "");
   const [isActive, setIsActive] = React.useState(category?.isActive ?? true);
   const [showOnHome, setShowOnHome] = React.useState(category?.showOnHome ?? true);
   const [age, setAge] = React.useState(category?.requiresAgeConfirm ?? false);
@@ -55,7 +67,7 @@ export function CategoryEditor({ category, trigger }: { category?: CategoryEdito
 
   const submit = async () => {
     setPending(true);
-    const payload = { slug, kind, isActive, showOnHome, requiresAgeConfirm: age, imageUrl, translations: tr };
+    const payload = { slug, kind, analyticsLabel, isActive, showOnHome, requiresAgeConfirm: age, imageUrl, translations: tr };
     const result = category ? await updateCategory(category.id, payload) : await createCategory(payload);
     setPending(false);
     if (!result.ok) {
@@ -145,13 +157,36 @@ export function CategoryEditor({ category, trigger }: { category?: CategoryEdito
               >
                 {Object.entries(CATEGORY_KIND_LABELS).map(([value, label]) => (
                   <option key={value} value={value}>
-                    {label}
+                    {value === "CUSTOM" ? `${label} — своё название в аналитике` : label}
                   </option>
                 ))}
               </NativeSelect>
               <span className="block text-xs font-normal text-muted-foreground">Нужен для промо «по типу» и аналитики</span>
             </label>
           </div>
+
+          {kind === "CUSTOM" && (
+            <label className="block space-y-1 rounded-lg border-2 border-border-strong p-3 text-sm font-medium">
+              Своя группа для аналитики
+              <Input
+                value={analyticsLabel}
+                onChange={(e) => setAnalyticsLabel(e.target.value)}
+                list="analytics-labels"
+                maxLength={60}
+                placeholder={tr.ru.name || tr.ro.name || "Например: Десерты"}
+              />
+              <datalist id="analytics-labels">
+                {labelSuggestions.map((label) => (
+                  <option key={label} value={label} />
+                ))}
+              </datalist>
+              <span className="block text-xs font-normal text-muted-foreground">
+                Под этим названием группа видна в «Аналитика → По типам групп». Группы с одинаковым названием
+                считаются вместе (можно выбрать уже созданное из списка). Пусто — используется название группы.
+              </span>
+              {errors.analyticsLabel && <span className="block text-xs text-destructive">{errors.analyticsLabel}</span>}
+            </label>
+          )}
 
           <ImageUploadField
             value={imageUrl}

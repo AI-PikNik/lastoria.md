@@ -115,6 +115,8 @@ model Category {
   /// Стартовые группы нельзя удалить — только скрыть
   isSystem           Boolean               @default(false)
   kind               CategoryKind          @default(CUSTOM)
+  /// Название своей группы для аналитики (для kind = CUSTOM); пусто — название группы
+  analyticsLabel     String?
   requiresAgeConfirm Boolean               @default(false)
   /// Показывать группу в блоке «Что мы готовим» на главной
   showOnHome         Boolean               @default(true)
@@ -376,7 +378,67 @@ model Settings {
   copyright           Json     @default("{}")
   /// Отпечаток ADMIN_EMAIL+ADMIN_PASSWORD из .env, который уже применён к базе
   adminEnvSyncedHash  String?
+  /// Блоки главной страницы: «Короткий ответ», «История», «Доставка/самовывоз/оплата»
+  homeShowShortAnswer Boolean  @default(false)
+  homeShowStory       Boolean  @default(false)
+  homeShowInfo        Boolean  @default(true)
+  /// Уже выполненные разовые обновления данных (prisma/data-upgrades.ts)
+  dataUpgrades        Json     @default("[]")
   updatedAt           DateTime @updatedAt
 
   @@map("settings")
+}
+
+/// Вопрос-ответ (FAQ) на странице «Доставка» и в разметке для Google.
+/// В текстах можно использовать {min}, {address}, {hours} — подставляются из настроек.
+model FaqItem {
+  id        String   @id @default(cuid())
+  /// { ro, ru, en, it }
+  question  Json     @default("{}")
+  /// { ro, ru, en, it }
+  answer    Json     @default("{}")
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive, sortOrder])
+  @@map("faq_items")
+}
+
+/// Заведение (точка) — показывается на странице «О нас»: текст, адрес, галерея
+model Location {
+  id          String          @id @default(cuid())
+  /// { ro, ru, en, it }
+  name        Json            @default("{}")
+  /// Короткий или средний текст о месте: { ro, ru, en, it }
+  description Json            @default("{}")
+  address     String          @default("")
+  phone       String?
+  /// { ro, ru, en, it }
+  hours       Json            @default("{}")
+  /// Ссылка на карту (Google Maps и т. п.)
+  mapUrl      String?
+  isActive    Boolean         @default(true)
+  sortOrder   Int             @default(0)
+  images      LocationImage[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([isActive, sortOrder])
+  @@map("locations")
+}
+
+model LocationImage {
+  id         String   @id @default(cuid())
+  locationId String
+  location   Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  url        String
+  /// Подпись / alt: { ro, ru, en, it }
+  caption    Json     @default("{}")
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  @@index([locationId, sortOrder])
+  @@map("location_images")
 }

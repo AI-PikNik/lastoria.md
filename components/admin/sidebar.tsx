@@ -8,17 +8,20 @@ import {
   ExternalLink,
   Image as ImageIcon,
   FileText,
+  CircleHelp,
   Languages,
   LayoutDashboard,
   UserCog,
   Percent,
   Pizza,
   Settings,
+  Store,
   Tags,
   Truck,
   Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CURRENT_RELEASE } from "@/lib/releases";
 
 type Role = "ADMIN" | "MANAGER";
 
@@ -31,6 +34,8 @@ const NAV = [
   { href: "/admin/promos", label: "Промо и скидки", icon: Percent },
   { href: "/admin/delivery", label: "Доставка", icon: Truck },
   { href: "/admin/pages", label: "Тексты страниц", icon: FileText },
+  { href: "/admin/faq", label: "Вопросы и ответы", icon: CircleHelp },
+  { href: "/admin/locations", label: "Заведения", icon: Store },
   { href: "/admin/translations", label: "Переводы", icon: Languages },
   { href: "/admin/analytics", label: "Аналитика", icon: BarChart3 },
   { href: "/admin/customers", label: "Клиенты", icon: Users },
@@ -79,6 +84,13 @@ export function AdminSidebar({ role }: { role: Role }) {
       >
         <ExternalLink className="size-4" /> Открыть сайт
       </a>
+      <Link
+        href="/admin/version"
+        className="rounded-md px-3 py-1 text-xs text-muted-foreground hover:bg-secondary hover:text-foreground"
+        title="Что нового в этой версии"
+      >
+        ver: {CURRENT_RELEASE.version}
+      </Link>
     </nav>
   );
 }

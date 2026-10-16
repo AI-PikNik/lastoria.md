@@ -13,7 +13,16 @@ import type { OrderStatus } from "@/lib/generated/prisma/client";
  * Кнопки смены статуса. Подтвердить — зелёная, следующий статус — винная,
  * отменить — с красной рамкой; у каждой иконка, чтобы не перепутать.
  */
-export function OrderActions({ id, status }: { id: string; status: OrderStatus }) {
+export function OrderActions({
+  id,
+  status,
+  size = "lg",
+}: {
+  id: string;
+  status: OrderStatus;
+  /** default — компактнее, для карточек на дашборде */
+  size?: "default" | "lg";
+}) {
   const router = useRouter();
   const [pending, setPending] = React.useState<string | null>(null);
 
@@ -39,7 +48,7 @@ export function OrderActions({ id, status }: { id: string; status: OrderStatus }
     <div className="flex flex-wrap gap-2">
       {status === "PENDING_CONFIRMATION" ? (
         <Button
-          size="lg"
+          size={size}
           variant="success"
           disabled={pending !== null}
           onClick={() => run("confirm", () => confirmOrder(id), "Заказ подтверждён")}
@@ -50,7 +59,7 @@ export function OrderActions({ id, status }: { id: string; status: OrderStatus }
       ) : (
         next && (
           <Button
-            size="lg"
+            size={size}
             disabled={pending !== null}
             onClick={() => run("advance", () => advanceOrder(id), `Статус: ${ORDER_STATUS_LABELS[next]}`)}
           >
@@ -60,7 +69,7 @@ export function OrderActions({ id, status }: { id: string; status: OrderStatus }
         )
       )}
       <Button
-        size="lg"
+        size={size}
         variant="danger"
         disabled={pending !== null}
         onClick={() => {

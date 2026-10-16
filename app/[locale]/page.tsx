@@ -108,10 +108,12 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         </div>
       </section>
 
-      {/* ── Короткий ответ (для людей и AI-поиска) ── */}
-      <section className="mx-auto max-w-3xl px-4">
-        <ShortAnswer title={t("shortAnswerTitle")} text={shortAnswer} />
-      </section>
+      {/* ── Короткий ответ (Настройки → Главная страница; по умолчанию скрыт) ── */}
+      {settings.home.shortAnswer && (
+        <section className="mx-auto max-w-3xl px-4">
+          <ShortAnswer title={t("shortAnswerTitle")} text={shortAnswer} />
+        </section>
+      )}
 
       {/* ── Группы меню (какие показывать — Админка → Группы → «На главной») ── */}
       {homeGroups.length > 0 && (
@@ -156,26 +158,30 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         </section>
       )}
 
-      {/* ── История ── */}
-      <section className="mx-auto max-w-4xl px-4 pt-16">
-        <Plaque className="px-5 py-8 sm:px-10">
-          <SectionTitle title={t("storyTitle")} subtitle={t("storySubtitle")} />
-          <div className="mx-auto mt-6 max-w-2xl space-y-4 text-center text-foreground/90">
-            {t("story.p1") && <p>{t("story.p1")}</p>}
-            {t("story.p2") && <p>{t("story.p2")}</p>}
-            {t("story.p3") && <p>{t("story.p3")}</p>}
-          </div>
-        </Plaque>
-      </section>
+      {/* ── История (Настройки → Главная страница; по умолчанию скрыта) ── */}
+      {settings.home.story && (
+        <section className="mx-auto max-w-4xl px-4 pt-16">
+          <Plaque className="px-5 py-8 sm:px-10">
+            <SectionTitle title={t("storyTitle")} subtitle={t("storySubtitle")} />
+            <div className="mx-auto mt-6 max-w-2xl space-y-4 text-center text-foreground/90">
+              {t("story.p1") && <p>{t("story.p1")}</p>}
+              {t("story.p2") && <p>{t("story.p2")}</p>}
+              {t("story.p3") && <p>{t("story.p3")}</p>}
+            </div>
+          </Plaque>
+        </section>
+      )}
 
-      {/* ── Доставка / самовывоз / оплата ── */}
-      <section className="mx-auto max-w-6xl px-4 pt-14">
-        <div className="grid gap-4 md:grid-cols-3">
-          <InfoCard icon={<Bike />} title={t("deliveryTitle")} text={t("deliveryText", { min: minOrder })} href="/delivery" />
-          <InfoCard icon={<ShoppingBag />} title={t("pickupTitle")} text={t("pickupText")} href="/delivery" />
-          <InfoCard icon={<Banknote />} title={t("paymentTitle")} text={t("paymentText")} href="/delivery" />
-        </div>
-      </section>
+      {/* ── Доставка / самовывоз / оплата (Настройки → Главная страница) ── */}
+      {settings.home.info && (
+        <section className="mx-auto max-w-6xl px-4 pt-14">
+          <div className="grid gap-4 md:grid-cols-3">
+            <InfoCard icon={<Bike />} title={t("deliveryTitle")} text={t("deliveryText", { min: minOrder })} href="/delivery" />
+            <InfoCard icon={<ShoppingBag />} title={t("pickupTitle")} text={t("pickupText")} href="/delivery" />
+            <InfoCard icon={<Banknote />} title={t("paymentTitle")} text={t("paymentText")} href="/delivery" />
+          </div>
+        </section>
+      )}
     </>
   );
 }

@@ -282,7 +282,14 @@
         "p3": "Pizza adevărată începe cu răbdare: aluatul are nevoie de timp, focul nu se grăbește, iar ingredientele simple spun cel mai mult.",
         "p4": "De aceea La Storia gătește după tradiția italiană — sos de roșii, mozzarella, busuioc și ulei de măsline, coapte până la marginea rumenă."
       },
-      "faqTitle": "Întrebări frecvente"
+      "faqTitle": "Întrebări frecvente",
+      "locationsTitle": "Unde ne găsiți",
+      "gallery": "Galerie",
+      "openMap": "Deschide pe hartă",
+      "photo": "Fotografie {n} din {total}",
+      "close": "Închide",
+      "prev": "Anterioara",
+      "next": "Următoarea"
     },
     "delivery": {
       "title": "Livrare și plată",

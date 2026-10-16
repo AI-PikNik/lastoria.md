@@ -16,7 +16,7 @@ export function ImageUploadField({
 }: {
   value: string | null;
   onChange: (url: string | null) => void;
-  folder?: "products" | "categories";
+  folder?: "products" | "categories" | "locations";
   label?: string;
 }) {
   const inputRef = React.useRef<HTMLInputElement>(null);

@@ -111,6 +111,13 @@ export const categorySchema = z
   .object({
     slug: slugSchema,
     kind: categoryKindSchema.default("CUSTOM"),
+    /** Название своей группы для аналитики (только для kind = CUSTOM) */
+    analyticsLabel: z
+      .string()
+      .trim()
+      .max(60, "Не длиннее 60 символов")
+      .optional()
+      .transform((v) => v || null),
     requiresAgeConfirm: z.boolean().default(false),
     isActive: z.boolean().default(true),
     showOnHome: z.boolean().default(true),
@@ -208,6 +215,9 @@ export const settingsSchema = z.object({
   geoLng: z.coerce.number().min(-180).max(180).nullable().optional(),
   cookieBannerEnabled: z.boolean().default(true),
   ageGateOnEnter: z.boolean().default(false),
+  homeShowShortAnswer: z.boolean().default(false),
+  homeShowStory: z.boolean().default(false),
+  homeShowInfo: z.boolean().default(true),
   copyright: localizedTextSchema(300),
   analyticsId: z
     .string()
@@ -333,4 +343,38 @@ export const customerEditSchema = z.object({
     .refine(isValidMoldovanPhone, "Телефон: +373XXXXXXXX или 0XXXXXXXX")
     .transform((value) => normalizeMoldovanPhone(value)!),
   email: z.string().trim().email("Неверный email").optional().or(z.literal("")),
+});
+
+/* ─────────────── Вопросы-ответы и заведения ─────────────── */
+
+export const faqItemSchema = z
+  .object({
+    question: localizedTextSchema(300),
+    answer: localizedTextSchema(2000),
+    isActive: z.boolean().default(true),
+  })
+  .refine((d) => hasAnyValue(d.question), { message: "Напишите вопрос хотя бы на одном языке", path: ["question"] })
+  .refine((d) => hasAnyValue(d.answer), { message: "Напишите ответ хотя бы на одном языке", path: ["answer"] });
+
+export const locationSchema = z
+  .object({
+    name: localizedTextSchema(120),
+    description: localizedTextSchema(3000),
+    hours: localizedTextSchema(200),
+    address: z.string().trim().max(300).default(""),
+    phone: z.string().trim().max(40).optional().transform((v) => v || null),
+    mapUrl: z
+      .string()
+      .trim()
+      .max(1000)
+      .optional()
+      .transform((v) => v || null)
+      .refine((v) => !v || /^https?:\/\//.test(v), "Ссылка должна начинаться с https://"),
+    isActive: z.boolean().default(true),
+  })
+  .refine((d) => hasAnyValue(d.name), { message: "Укажите название заведения", path: ["name"] });
+
+export const locationImageSchema = z.object({
+  url: z.string().trim().min(1, "Загрузите фото").max(1000),
+  caption: localizedTextSchema(200),
 });

@@ -158,7 +158,8 @@ export async function uploadProductImages(formData: FormData): Promise<ActionRes
   const files = formData.getAll("files").filter((f): f is File => f instanceof File && f.size > 0);
   if (files.length === 0) return { ok: false, error: "Файлы не выбраны" };
   if (files.length > 10) return { ok: false, error: "За один раз — не больше 10 фото" };
-  const folder = formData.get("folder") === "categories" ? "categories" : "products";
+  const requested = formData.get("folder");
+  const folder = requested === "categories" || requested === "locations" ? requested : "products";
   try {
     const urls: string[] = [];
     for (const file of files) urls.push((await uploadImage(file, folder)).url);

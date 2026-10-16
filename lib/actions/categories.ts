@@ -38,6 +38,7 @@ export async function createCategory(raw: unknown): Promise<ActionResult> {
     data: {
       slug: parsed.data.slug,
       kind: parsed.data.kind,
+      analyticsLabel: parsed.data.kind === "CUSTOM" ? parsed.data.analyticsLabel : null,
       requiresAgeConfirm: parsed.data.kind === "ALCOHOL" ? true : parsed.data.requiresAgeConfirm,
       isActive: parsed.data.isActive,
       showOnHome: parsed.data.showOnHome,
@@ -64,6 +65,7 @@ export async function updateCategory(id: string, raw: unknown): Promise<ActionRe
       data: {
         slug: parsed.data.slug,
         kind: parsed.data.kind,
+        analyticsLabel: parsed.data.kind === "CUSTOM" ? parsed.data.analyticsLabel : null,
         requiresAgeConfirm: parsed.data.kind === "ALCOHOL" ? true : parsed.data.requiresAgeConfirm,
         isActive: parsed.data.isActive,
         showOnHome: parsed.data.showOnHome,

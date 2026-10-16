@@ -102,6 +102,7 @@ export default async function AdminProductsPage({ searchParams }: PageProps<"/ad
           <TableHeader>
             <TableRow>
               <TableHead>Товар</TableHead>
+              <TableHead>SKU</TableHead>
               <TableHead>Группа</TableHead>
               <TableHead>Цена</TableHead>
               <TableHead>Статус</TableHead>
@@ -119,11 +120,27 @@ export default async function AdminProductsPage({ searchParams }: PageProps<"/ad
                         {product.imageUrl && <Image src={product.imageUrl} alt="" fill sizes="40px" className="object-cover" />}
                       </div>
                       <div>
-                        <Link href={`/admin/products/${product.id}`} className="flex flex-wrap items-center gap-2 font-medium hover:underline">
-                          {name}
-                          {product.isFeatured && <Badge variant="hit">Хит</Badge>}
-                          {(product.isAlcohol || product.category.requiresAgeConfirm) && <Badge variant="dark">18+</Badge>}
-                        </Link>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Link href={`/admin/products/${product.id}`} className="font-medium text-primary hover:underline">
+                            {name}
+                          </Link>
+                          {/* Значки — только пометки, не ссылки */}
+                          {product.isFeatured && (
+                            <Badge variant="hit" className="cursor-default select-none" title="Хит — показывается на главной">
+                              Хит
+                            </Badge>
+                          )}
+                          {product.oldPrice && (
+                            <Badge variant="outline" className="cursor-default select-none" title="Указана старая цена — на сайте видна скидка">
+                              Скидка
+                            </Badge>
+                          )}
+                          {(product.isAlcohol || product.category.requiresAgeConfirm) && (
+                            <Badge variant="dark" className="cursor-default select-none" title="Продаётся только с 18 лет">
+                              18+
+                            </Badge>
+                          )}
+                        </div>
                         {product.missing.length > 0 && (
                           <div className="mt-1 flex flex-wrap gap-1">
                             {product.missing.map((l) => (
@@ -133,6 +150,9 @@ export default async function AdminProductsPage({ searchParams }: PageProps<"/ad
                         )}
                       </div>
                     </div>
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap font-mono text-sm">
+                    {product.sku || <span className="text-muted-foreground">—</span>}
                   </TableCell>
                   <TableCell className="text-muted-foreground">{adminName(product.category.translations, product.category.slug)}</TableCell>
                   <TableCell>
@@ -152,7 +172,7 @@ export default async function AdminProductsPage({ searchParams }: PageProps<"/ad
             })}
             {products.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
+                <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">
                   Товары не найдены
                 </TableCell>
               </TableRow>

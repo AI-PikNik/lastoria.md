@@ -31,6 +31,9 @@ export interface SettingsFormValues {
   geoLng: string;
   cookieBannerEnabled: boolean;
   ageGateOnEnter: boolean;
+  homeShowShortAnswer: boolean;
+  homeShowStory: boolean;
+  homeShowInfo: boolean;
   analyticsId: string;
   copyright: LocalizedValue;
 }
@@ -123,6 +126,27 @@ export function SettingsForm({ initial }: { initial: SettingsFormValues }) {
           <Text label="Telegram chat ID (пусто — из .env)" value={v.telegramChatId} onChange={(x) => set("telegramChatId", x)} placeholder="-1001234567890" />
           <Text label="Email отправителя писем" value={v.emailSenderAddress} onChange={(x) => set("emailSenderAddress", x)} error={errors.emailSenderAddress} />
         </div>
+      </Section>
+
+      <Section
+        title="Главная страница: блоки"
+        description="Какие дополнительные блоки показывать на главной. Тексты блоков меняются в «Тексты страниц → Главная», группы меню — в «Группы товаров» (переключатель «На главной»)."
+      >
+        {(
+          [
+            ["homeShowShortAnswer", "«Короткий ответ» под первым экраном", "Абзац о ресторане, доставке и оплате (текст — выше, в блоке SEO). Те же сведения есть на странице «Доставка» и в /llms.txt"],
+            ["homeShowStory", "«История La Storia»", "Блок с историей после «Акций»; про ресторан подробнее — на странице «О нас»"],
+            ["homeShowInfo", "Карточки «Доставка / Самовывоз / Оплата» внизу", "Три карточки со ссылкой на страницу доставки"],
+          ] as const
+        ).map(([key, title, hint]) => (
+          <label key={key} className="flex items-center justify-between gap-3 rounded-lg border border-border p-3 text-sm">
+            <span>
+              <span className="font-medium">{title}</span>
+              <span className="block text-xs text-muted-foreground">{hint}</span>
+            </span>
+            <Switch checked={v[key]} onCheckedChange={(x) => set(key, x)} />
+          </label>
+        ))}
       </Section>
 
       <Section

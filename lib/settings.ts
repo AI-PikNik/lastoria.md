@@ -29,6 +29,10 @@ const DEFAULT_SETTINGS: Omit<Settings, "updatedAt"> = {
   analyticsId: null,
   copyright: {},
   adminEnvSyncedHash: null,
+  homeShowShortAnswer: false,
+  homeShowStory: false,
+  homeShowInfo: true,
+  dataUpgrades: [],
 };
 
 /** Сырые настройки из БД (один запрос на рендер благодаря cache). */
@@ -63,6 +67,8 @@ export interface PublicSettings {
   analyticsId: string | null;
   /** Шаблон копирайта на языке страницы ({year}, {name}); пусто — стандартный */
   copyright: string;
+  /** Какие блоки показывать на главной */
+  home: { shortAnswer: boolean; story: boolean; info: boolean };
 }
 
 export const DEFAULT_HERO_IMAGE = "/brand/poster.jpg";
@@ -87,6 +93,7 @@ export const getPublicSettings = cache(async (locale: AppLocale): Promise<Public
     ageGateOnEnter: s.ageGateOnEnter,
     analyticsId: s.analyticsId,
     copyright: pickLocalized(s.copyright, locale),
+    home: { shortAnswer: s.homeShowShortAnswer, story: s.homeShowStory, info: s.homeShowInfo },
   };
 });
 

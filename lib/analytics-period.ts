@@ -147,9 +147,6 @@ function bucketLabel(w: Date, granularity: Granularity): string {
   }
 }
 
-/** Сколько товаров можно сравнить на одном графике (столько цветов различимы) */
-export const MAX_TREND_PRODUCTS = 3;
-
 /** Полночь по Кишинёву для календарной даты (месяц с 0; переполнение дней/месяцев допустимо) */
 export function chisinauDayStart(year: number, month: number, day: number): Date {
   // 12:00 UTC — заведомо тот же календарный день в Кишинёве (UTC+2/+3)

@@ -110,3 +110,76 @@ describe("периоды аналитики по календарю Кишинё
     expect(buildBuckets(chisinauDays([2026, 8, 17], [2026, 9, 17]), "day")).toHaveLength(30);
   });
 });
+
+describe("версия сайта", () => {
+  it("package.json и первая запись в истории версий совпадают", async () => {
+    const { RELEASES } = await import("@/lib/releases");
+    const pkg = await import("../package.json");
+    expect(RELEASES[0].version).toBe(pkg.version);
+  });
+
+  it("версии идут от новой к старой без повторов", async () => {
+    const { RELEASES } = await import("@/lib/releases");
+    const nums = RELEASES.map((r) => r.version.split(".").map(Number));
+    for (let i = 1; i < nums.length; i++) {
+      const [a, b] = [nums[i - 1], nums[i]];
+      const newer = a[0] - b[0] || a[1] - b[1] || a[2] - b[2];
+      expect(newer).toBeGreaterThan(0);
+    }
+  });
+});
+
+describe("аналитика продаж: разбивки и линии графика", () => {
+  const at = (iso: string) => new Date(iso);
+  const rows = [
+    { orderId: "o1", createdAt: at("2026-10-14T09:00:00Z"), productId: "pm", productName: "Маргарита", categoryId: "cp", categoryName: "Пицца", typeKey: "kind:PIZZA", typeLabel: "Пицца", qty: 2, revenue: 200 },
+    { orderId: "o1", createdAt: at("2026-10-14T09:00:00Z"), productId: "pt", productName: "Тирамису", categoryId: "cd", categoryName: "Десерты", typeKey: "custom:Сладкое", typeLabel: "Сладкое", qty: 1, revenue: 60 },
+    { orderId: "o2", createdAt: at("2026-10-15T09:00:00Z"), productId: "pm", productName: "Маргарита", categoryId: "cp", categoryName: "Пицца", typeKey: "kind:PIZZA", typeLabel: "Пицца", qty: 1, revenue: 100 },
+    { orderId: "o3", createdAt: at("2026-10-15T10:00:00Z"), productId: "pg", productName: "Джелато", categoryId: "cg", categoryName: "Мороженое", typeKey: "custom:Сладкое", typeLabel: "Сладкое", qty: 4, revenue: 40 },
+  ];
+
+  it("своя группа объединяет разные группы с одним названием", async () => {
+    const { summarizeSales } = await import("@/lib/analytics-sales");
+    const s = summarizeSales(rows);
+    expect(s.totalRevenue).toBe(400);
+    expect(s.byType.map((t) => [t.label, t.revenue, t.qty, t.orders])).toEqual([
+      ["Пицца", 300, 3, 2],
+      ["Сладкое", 100, 5, 2],
+    ]);
+    expect(s.byType[0].share).toBeCloseTo(0.75);
+    expect(s.byType[1].products.map((p) => p.name)).toEqual(["Тирамису", "Джелато"]);
+    expect(s.byCategory).toHaveLength(3);
+  });
+
+  it("линии графика: товар, группа и тип одновременно", async () => {
+    const { buildTrend } = await import("@/lib/analytics-sales");
+    const { buildBuckets, chisinauDays } = await import("@/lib/analytics-period");
+    const buckets = buildBuckets(chisinauDays([2026, 9, 14], [2026, 9, 16]), "day");
+    const trend = buildTrend(
+      rows,
+      [
+        { spec: "p:pm", label: "Маргарита" },
+        { spec: "c:cd", label: "Десерты" },
+        { spec: "t:custom:Сладкое", label: "Сладкое" },
+        { spec: "мусор", label: "?" },
+      ],
+      buckets,
+      "day"
+    );
+    expect(trend.series.map((s) => [s.label, s.qty, s.revenue])).toEqual([
+      ["Маргарита", 3, 300],
+      ["Десерты", 1, 60],
+      ["Сладкое", 5, 100],
+    ]);
+    expect(trend.points.map((p) => [p.label, p.q0, p.r2])).toEqual([
+      ["14.10", 2, 60],
+      ["15.10", 1, 40],
+    ]);
+  });
+
+  it("не больше 6 линий", async () => {
+    const { buildTrend, MAX_SERIES } = await import("@/lib/analytics-sales");
+    const many = Array.from({ length: 9 }, (_, i) => ({ spec: `p:x${i}`, label: `x${i}` }));
+    expect(buildTrend(rows, many, [], "day").series).toHaveLength(MAX_SERIES);
+  });
+});

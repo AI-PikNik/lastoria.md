@@ -36,6 +36,9 @@ export async function updateSettings(raw: unknown): Promise<ActionResult> {
     geoLng: d.geoLng ?? null,
     cookieBannerEnabled: d.cookieBannerEnabled,
     ageGateOnEnter: d.ageGateOnEnter,
+    homeShowShortAnswer: d.homeShowShortAnswer,
+    homeShowStory: d.homeShowStory,
+    homeShowInfo: d.homeShowInfo,
     analyticsId: d.analyticsId || null,
     copyright: json(d.copyright),
   };

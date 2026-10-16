@@ -13,6 +13,7 @@ import { LOCALES, type AppLocale } from "@/lib/i18n/locales";
 import type { Prisma } from "@/lib/generated/prisma/client";
 import { generatePlaceholder } from "./seed-placeholders";
 import { syncAdminFromEnv } from "@/lib/admin-env-sync";
+import { runDataUpgrades } from "@/lib/data-upgrades";
 
 type L10n = Record<AppLocale, string>;
 
@@ -800,6 +801,7 @@ async function main() {
     console.log(`Demo orders created: ${demoOrders.length}`);
   }
 
+  for (const line of await runDataUpgrades(prisma)) console.log(`Data upgrade: ${line}`);
   console.log("Seed complete");
 }
 

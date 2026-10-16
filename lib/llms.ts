@@ -53,8 +53,8 @@ export function buildLlmsTxt(data: LlmsData): string {
   lines.push("## Main pages", "");
   lines.push(
     `- [Menu](${url(data, "/menu")}): full menu with prices`,
-    `- [Delivery and payment](${url(data, "/delivery")}): delivery zones, fees, minimum order`,
-    `- [About](${url(data, "/about")}): about the pizzeria and FAQ`,
+    `- [Delivery and payment](${url(data, "/delivery")}): delivery zones, fees, minimum order, FAQ`,
+    `- [About](${url(data, "/about")}): about the pizzeria, locations and photos`,
     `- [Contacts](${url(data, "/contacts")}): address, phone, opening hours`,
     `- [Alcohol 18+ policy](${url(data, "/age-policy")})`,
     ""

@@ -97,11 +97,14 @@ export function SectionTitle({
   as: Tag = "h2",
   className,
   align = "center",
+  id,
 }: {
   title: ReactNode;
   subtitle?: ReactNode;
   as?: "h1" | "h2" | "h3";
   className?: string;
+  /** id заголовка — для aria-labelledby секции */
+  id?: string;
   align?: "center" | "left";
 }) {
   const centered = align === "center";
@@ -109,7 +112,7 @@ export function SectionTitle({
     <div className={cn("flex flex-col gap-1", centered ? "items-center text-center" : "items-start", className)}>
       <div className="flex items-center gap-3">
         {centered && <OliveBranch mirrored className="hidden sm:block" />}
-        <Tag className="font-display text-2xl font-bold leading-tight text-primary sm:text-3xl md:text-4xl">
+        <Tag id={id} className="font-display text-2xl font-bold leading-tight text-primary sm:text-3xl md:text-4xl">
           {title}
         </Tag>
         {centered && <OliveBranch className="hidden sm:block" />}

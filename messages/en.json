@@ -282,7 +282,14 @@
         "p3": "Real pizza starts with patience: the dough needs time, the fire is never rushed, and simple ingredients speak the loudest.",
         "p4": "That is why La Storia cooks the Italian way — tomato sauce, mozzarella, basil and olive oil, baked to a golden crust."
       },
-      "faqTitle": "Frequently asked questions"
+      "faqTitle": "Frequently asked questions",
+      "locationsTitle": "Where to find us",
+      "gallery": "Gallery",
+      "openMap": "Open on the map",
+      "photo": "Photo {n} of {total}",
+      "close": "Close",
+      "prev": "Previous",
+      "next": "Next"
     },
     "delivery": {
       "title": "Delivery & payment",

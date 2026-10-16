@@ -282,7 +282,14 @@
         "p3": "La vera pizza nasce dalla pazienza: l'impasto ha bisogno di tempo, il fuoco non si affretta e gli ingredienti semplici parlano più forte.",
         "p4": "Per questo La Storia cucina secondo la tradizione italiana — salsa di pomodoro, mozzarella, basilico e olio d'oliva, cotti fino al cornicione dorato."
       },
-      "faqTitle": "Domande frequenti"
+      "faqTitle": "Domande frequenti",
+      "locationsTitle": "Dove trovarci",
+      "gallery": "Galleria",
+      "openMap": "Apri sulla mappa",
+      "photo": "Foto {n} di {total}",
+      "close": "Chiudi",
+      "prev": "Precedente",
+      "next": "Successiva"
     },
     "delivery": {
       "title": "Consegna e pagamento",

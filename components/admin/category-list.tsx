@@ -21,7 +21,7 @@ export interface CategoryRow extends CategoryEditorData {
   missing: AppLocale[];
 }
 
-export function CategoryList({ categories }: { categories: CategoryRow[] }) {
+export function CategoryList({ categories, labelSuggestions }: { categories: CategoryRow[]; labelSuggestions: string[] }) {
   const router = useRouter();
   const [items, setItems] = React.useState(categories);
   const [source, setSource] = React.useState(categories);
@@ -76,7 +76,7 @@ export function CategoryList({ categories }: { categories: CategoryRow[] }) {
               {category.requiresAgeConfirm && <Badge variant="dark">18+</Badge>}
             </p>
             <p className="text-xs text-muted-foreground">
-              /menu/group/{category.slug} · {CATEGORY_KIND_LABELS[category.kind]} · товаров: {category.productCount}
+              /menu/group/{category.slug} · аналитика: {category.kind === "CUSTOM" ? category.analyticsLabel || category.name : CATEGORY_KIND_LABELS[category.kind]} · товаров: {category.productCount}
             </p>
             {category.missing.length > 0 && (
               <div className="mt-1 flex flex-wrap gap-1">
@@ -111,6 +111,7 @@ export function CategoryList({ categories }: { categories: CategoryRow[] }) {
             </Button>
             <CategoryEditor
               category={category}
+              labelSuggestions={labelSuggestions}
               trigger={
                 <Button type="button" variant="outline" size="sm">
                   <Pencil /> Изменить

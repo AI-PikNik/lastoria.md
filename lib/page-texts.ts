@@ -49,13 +49,15 @@ export const PAGE_TEXT_GROUPS: PageTextGroup[] = [
     id: "about",
     title: "О нас",
     url: "/about",
-    description: "Текст страницы «О нас». Вопросы и ответы под текстом — в разделе «Вопросы и ответы».",
+    description:
+      "Общий текст страницы «О нас». Ниже на странице — заведения с адресом, текстом о месте и галереей: их добавляют в разделе «Заведения». Пустой абзац не показывается.",
     fields: [
       { key: "pages.about.h1", label: "Заголовок на странице" },
       { key: "pages.about.body.p1", label: "Абзац 1", multiline: true },
       { key: "pages.about.body.p2", label: "Абзац 2", multiline: true },
       { key: "pages.about.body.p3", label: "Абзац 3 (курсивом)", multiline: true },
       { key: "pages.about.body.p4", label: "Абзац 4", multiline: true },
+      { key: "pages.about.locationsTitle", label: "Заголовок блока с заведениями" },
       ...seo("pages.about"),
     ],
   },
@@ -63,9 +65,11 @@ export const PAGE_TEXT_GROUPS: PageTextGroup[] = [
     id: "delivery",
     title: "Доставка и оплата",
     url: "/delivery",
-    description: "Тексты страницы доставки. Районы и цены доставки — в разделе «Доставка».",
+    description:
+      "Тексты страницы доставки. Районы и цены — в разделе «Доставка», вопросы-ответы внизу страницы — в разделе «Вопросы и ответы».",
     fields: [
       { key: "pages.delivery.h1", label: "Заголовок на странице" },
+      { key: "pages.delivery.faqTitle", label: "Заголовок блока вопросов-ответов" },
       { key: "pages.delivery.paymentText", label: "Способы оплаты", multiline: true },
       { key: "pages.delivery.pickupText", label: "Самовывоз", multiline: true, hint: PLACEHOLDER_HINT },
       ...seo("pages.delivery"),
@@ -77,16 +81,6 @@ export const PAGE_TEXT_GROUPS: PageTextGroup[] = [
     url: "/contacts",
     description: "Телефон, адрес, email и часы работы меняются в «Настройках». Здесь — только заголовки.",
     fields: [{ key: "pages.contacts.h1", label: "Заголовок на странице" }, ...seo("pages.contacts")],
-  },
-  {
-    id: "faq",
-    title: "Вопросы и ответы (FAQ)",
-    url: "/about",
-    description: "Показываются на страницах «О нас» и «Доставка» и в разметке для Google.",
-    fields: [1, 2, 3, 4, 5, 6, 7].flatMap((n) => [
-      { key: `pages.faq.q${n}.q`, label: `Вопрос ${n}` },
-      { key: `pages.faq.q${n}.a`, label: `Ответ ${n}`, multiline: true, hint: PLACEHOLDER_HINT },
-    ]),
   },
   {
     id: "privacy",
