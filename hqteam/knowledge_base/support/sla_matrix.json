@@ -1,0 +1,10 @@
+{
+  "_note": "ШАБЛОН SLA-матрицы. Значения — предложение для обсуждения; договорными становятся только после approval commit_sla (MANAGEMENT) и включения в договор.",
+  "is_template": true,
+  "severities": {
+    "P1": {"definition": "Остановка критичного сервиса для всех пользователей/всех точек", "response_min": 30, "workaround_h": 4, "escalate_to_l3_after_min": 30},
+    "P2": {"definition": "Деградация критичного сервиса или отказ для части точек", "response_min": 60, "workaround_h": 8, "escalate_to_l3_after_min": 120},
+    "P3": {"definition": "Некритичная неисправность, есть обходной путь", "response_min": 240, "workaround_h": 24, "escalate_to_l3_after_min": 480},
+    "P4": {"definition": "Консультация, запрос на изменение", "response_min": 480, "workaround_h": 72, "escalate_to_l3_after_min": null}
+  }
+}

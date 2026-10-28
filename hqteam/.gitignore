@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+*.db
+*.db-journal
+artifacts/
+outbox/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
