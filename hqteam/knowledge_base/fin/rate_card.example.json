@@ -1,0 +1,16 @@
+{
+  "is_placeholder": true,
+  "note": "ДЕМОНСТРАЦИОННЫЕ ставки для синтетических сценариев. Не являются ставками HQTeam. Перед реальной сметой заменить файлом rate_card.json, утверждённым FIN-HUMAN. В HQ_ENV=prod расчёт по этому файлу запрещён.",
+  "currency": "MDL",
+  "target_margin": "0.30",
+  "hourly_rates": {
+    "architect": 1000,
+    "network_engineer": 800,
+    "system_engineer": 750,
+    "security_engineer": 900,
+    "developer": 750,
+    "qa_engineer": 550,
+    "support_engineer": 500,
+    "project_manager": 800
+  }
+}

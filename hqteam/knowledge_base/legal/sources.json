@@ -1,0 +1,96 @@
+{
+  "_readme": "Реестр того, ЧТО и ГДЕ проверять. Текстов норм здесь нет. Номера/даты актов указаны по памяти модели и вторичным источникам и ОБЯЗАТЕЛЬНО подтверждаются на официальном портале (Registrul de stat al actelor juridice: www.legis.md / lex.justice.md) перед использованием. document_url заполняет человек (юрист) точной ссылкой на карточку акта; пока он пуст, загрузка отказывает, чтобы не проиндексировать главную страницу портала как 'закон'.",
+  "registry_checked_at": "2026-10-28",
+  "sources": [
+    {
+      "key": "md_civil_code",
+      "role": "LEGAL",
+      "title": "Codul civil al Republicii Moldova (Legea nr. 1107/2002) — актуальная редакция",
+      "portal": "https://www.legis.md/",
+      "url": "",
+      "jurisdiction": "MD",
+      "topics": ["договор услуг", "подряд", "ответственность", "интеллектуальная собственность на результат"],
+      "status_note": "Подтвердить номер, актуальную консолидированную редакцию и дату последних изменений."
+    },
+    {
+      "key": "md_labour_code",
+      "role": "LEGAL",
+      "title": "Codul muncii al Republicii Moldova (Legea nr. 154/2003) — актуальная редакция",
+      "portal": "https://www.legis.md/",
+      "url": "",
+      "jurisdiction": "MD",
+      "topics": ["документы по персоналу"],
+      "status_note": "Подтвердить актуальную редакцию."
+    },
+    {
+      "key": "md_fiscal_code",
+      "role": "FIN",
+      "title": "Codul fiscal al Republicii Moldova (Legea nr. 1163/1997) — Titlul III TVA и др.",
+      "portal": "https://www.legis.md/",
+      "url": "",
+      "jurisdiction": "MD",
+      "topics": ["TVA", "ставки", "место поставки услуг", "factura fiscală"],
+      "status_note": "Ставки, пороги регистрации, льготы и формы брать ТОЛЬКО из загруженной редакции с датой проверки."
+    },
+    {
+      "key": "md_sfs_efactura",
+      "role": "FIN",
+      "title": "Serviciul Fiscal de Stat — порядок выставления factura fiscală / e-Factura",
+      "portal": "https://www.sfs.md/",
+      "url": "",
+      "jurisdiction": "MD",
+      "topics": ["factura fiscală", "e-Factura"],
+      "status_note": "Найти актуальный нормативный акт/инструкцию SFS."
+    },
+    {
+      "key": "md_personal_data_195_2024",
+      "role": "LEGAL",
+      "title": "Legea nr. 195/2024 cu privire la protecția datelor cu caracter personal",
+      "portal": "https://www.legis.md/",
+      "url": "",
+      "jurisdiction": "MD",
+      "topics": ["ПДн", "DPA", "оператор/обработчик", "трансграничная передача"],
+      "status_note": "По вторичным источникам (moldpres.md, dlapiperdataprotection.com, проверено 2026-10-28): опубликован 23.08.2024, вступает в силу 23.08.2026 и заменяет Закон №133/2011. Подтвердить по официальному тексту и проверить подзаконные акты НЦЗПД (datepersonale.md)."
+    },
+    {
+      "key": "md_personal_data_133_2011",
+      "role": "LEGAL",
+      "title": "Legea nr. 133/2011 privind protecția datelor cu caracter personal (историческая редакция)",
+      "portal": "https://www.legis.md/",
+      "url": "",
+      "jurisdiction": "MD",
+      "topics": ["ПДн (до 23.08.2026)"],
+      "status_note": "По вторичным источникам утратил силу с 23.08.2026 (заменён Законом №195/2024). Использовать только для отношений до этой даты и после проверки."
+    },
+    {
+      "key": "md_e_signature",
+      "role": "LEGAL",
+      "title": "Закон РМ об электронной идентификации и доверительных услугах / электронном документе и подписи",
+      "portal": "https://www.legis.md/",
+      "url": "",
+      "jurisdiction": "MD",
+      "topics": ["электронная подпись", "электронный документ"],
+      "status_note": "Номер действующего акта не зашит намеренно: установить по legis.md (предположительно Закон №124/2022 — проверить)."
+    },
+    {
+      "key": "md_it_parks",
+      "role": "LEGAL",
+      "title": "Закон РМ о парках информационных технологий (режим резидентов IT-парков)",
+      "portal": "https://www.legis.md/",
+      "url": "",
+      "jurisdiction": "MD",
+      "topics": ["IT-парк", "единый налог резидента"],
+      "status_note": "Применять только если HQTeam/контрагент — резидент. Номер акта (предположительно Закон №77/2018) подтвердить."
+    },
+    {
+      "key": "eu_gdpr",
+      "role": "LEGAL",
+      "title": "Regulation (EU) 2016/679 (GDPR)",
+      "portal": "https://eur-lex.europa.eu/",
+      "url": "https://eur-lex.europa.eu/eli/reg/2016/679/oj",
+      "jurisdiction": "EU",
+      "topics": ["экстерриториальность ст. 3", "DPA ст. 28"],
+      "status_note": "Применимость к кейсу проверять отдельно (ст. 3: предложение товаров/услуг субъектам в ЕС, мониторинг поведения)."
+    }
+  ]
+}

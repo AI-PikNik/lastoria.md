@@ -1,0 +1,27 @@
+{
+  "synthetic": true,
+  "dataset": "СИНТЕТИЧЕСКИЙ набор: вымышленные компании и контакты (домены .example по RFC 2606). Любые совпадения случайны. Реальные рассылки не выполняются.",
+  "leads": [
+    {"company": "[SYNTH] Demo Retail Nord SRL", "sector": "retail", "source": "synthetic:inbound-форма сайта HQTeam (демо)",
+     "url": "https://retail-nord.example", "consent": "GRANTED",
+     "contact": {"name": "Synthetic Contact A", "role": "Директор по операциям", "email": "ops@retail-nord.example", "phone": "+373 600 00 001"},
+     "pains": ["5 филиалов без VPN, файлы передают по почте", "нет резервного копирования сервера учёта", "один системный администратор, нет поддержки"],
+     "signals": {"budget": true, "authority": "decision_maker", "timeline": "Q1 2027"}},
+    {"company": "[SYNTH] Demo Fabrica Sud SA", "sector": "manufacturing", "source": "synthetic:посещение стенда на отраслевой выставке (демо)",
+     "url": "https://fabrica-sud.example", "consent": "UNKNOWN",
+     "contact": {"name": "Synthetic Contact B", "role": "Главный инженер", "email": "eng@fabrica-sud.example"},
+     "pains": ["устаревшие физические серверы VMware без кластера", "плоская сеть", "боятся шифровальщика"],
+     "signals": {"budget": true, "authority": "influencer", "timeline": "2027"}},
+    {"company": "[SYNTH] Demo Consult Grup SRL", "sector": "services", "source": "synthetic:рекомендация партнёра (демо)",
+     "url": "https://consult-grup.example", "consent": "GRANTED",
+     "contact": {"name": "Synthetic Contact C", "role": "Офис-менеджер", "email": "office@consult-grup.example"},
+     "pains": ["нет MFA для почты"],
+     "signals": {"budget": false, "authority": "unknown", "timeline": null}},
+    {"company": "[SYNTH] Demo Logistic Est SRL", "sector": "retail", "source": "synthetic:вебинар HQTeam, отказ от коммуникаций (демо)",
+     "url": "https://logistic-est.example", "consent": "DENIED",
+     "contact": {"name": "Synthetic Contact D", "role": "CEO", "email": "ceo@logistic-est.example"},
+     "pains": ["сеть", "бэкап"], "signals": {"budget": true, "authority": "decision_maker", "timeline": "Q2"}},
+    {"company": "[SYNTH] Demo NoSource SRL", "sector": "retail", "source": "",
+     "contact": {"name": "Unknown"}, "pains": ["сервер"], "signals": {}}
+  ]
+}
